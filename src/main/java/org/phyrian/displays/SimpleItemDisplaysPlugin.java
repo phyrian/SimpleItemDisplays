@@ -1,0 +1,61 @@
+package org.phyrian.displays;
+
+import javax.annotation.Nonnull;
+
+import org.phyrian.displays.component.DisplayedItemComponent;
+import org.phyrian.displays.component.ItemDisplayBlock;
+import org.phyrian.displays.event.BreakBlockEventSystem;
+import org.phyrian.displays.interaction.DisplayItemInteraction;
+import org.phyrian.displays.interaction.RemoveDisplayedItemInteraction;
+import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction;
+import com.hypixel.hytale.server.core.plugin.JavaPlugin;
+import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
+
+/**
+ * Adds custom interactions for putting items into Simple Item Displays
+ */
+public class SimpleItemDisplaysPlugin extends JavaPlugin {
+
+  public static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
+
+  private static SimpleItemDisplaysPlugin instance;
+
+  public SimpleItemDisplaysPlugin(@Nonnull JavaPluginInit init) {
+    super(init);
+    instance = this;
+    LOGGER.atInfo().log("SimpleItemDisplays v" + this.getManifest().getVersion().toString() + " loading...");
+  }
+
+  @Override
+  protected void setup() {
+    LOGGER.atInfo().log("Setting up SimpleItemDisplays...");
+    super.setup();
+
+    this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_DisplayItem", DisplayItemInteraction.class, DisplayItemInteraction.CODEC);
+    this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_RemoveDisplayedItem", RemoveDisplayedItemInteraction.class, RemoveDisplayedItemInteraction.CODEC);
+    this.getEntityStoreRegistry().registerSystem(new BreakBlockEventSystem());
+    ItemDisplayBlock.TYPE = this.getChunkStoreRegistry().registerComponent(ItemDisplayBlock.class, "SimpleItemDisplays_ItemDisplayBlock", ItemDisplayBlock.CODEC);
+    DisplayedItemComponent.TYPE = this.getEntityStoreRegistry().registerComponent(DisplayedItemComponent.class, "SimpleItemDisplays_DisplayedItem", DisplayedItemComponent.CODEC);
+
+    LOGGER.atInfo().log("SimpleItemDisplays setup complete!");
+  }
+
+  @Override
+  protected void start() {
+    super.start();
+  }
+
+  @Override
+  protected void shutdown() {
+    super.shutdown();
+  }
+
+  /**
+   * Gets the singleton instance of the plugin.
+   */
+  public static SimpleItemDisplaysPlugin getInstance() {
+    return instance;
+  }
+
+}
