@@ -9,10 +9,12 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.phyrian.displays.display.DisplayKind;
-import org.phyrian.displays.display.DisplayTransform;
-import org.phyrian.displays.display.DisplayVisual;
+import org.phyrian.displays.config.DisplayKind;
+import org.phyrian.displays.config.DisplayOrientation;
+import org.phyrian.displays.config.DisplayTransform;
 import org.phyrian.displays.util.ItemUtils;
+import org.phyrian.displays.util.DisplayUtils;
+
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
@@ -25,33 +27,15 @@ import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Holder;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
-import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Vector3d;
-import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.math.vector.Vector3i;
-import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
-import com.hypixel.hytale.server.core.asset.type.blocktype.config.RotationTuple;
 import com.hypixel.hytale.server.core.asset.type.buildertool.config.BlockTypeListAsset;
 import com.hypixel.hytale.server.core.asset.type.item.config.Item;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
-import com.hypixel.hytale.server.core.entity.entities.BlockEntity;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
-import com.hypixel.hytale.server.core.modules.entity.component.EntityScaleComponent;
-import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
-import com.hypixel.hytale.server.core.modules.entity.component.Interactable;
-import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
-import com.hypixel.hytale.server.core.modules.entity.component.PersistentModel;
-import com.hypixel.hytale.server.core.modules.entity.component.PropComponent;
-import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
-import com.hypixel.hytale.server.core.modules.entity.item.ItemComponent;
-import com.hypixel.hytale.server.core.modules.entity.item.PreventItemMerging;
-import com.hypixel.hytale.server.core.modules.entity.item.PreventPickup;
-import com.hypixel.hytale.server.core.modules.entity.tracker.NetworkId;
-import com.hypixel.hytale.server.core.modules.interaction.Interactions;
-import com.hypixel.hytale.server.core.prefab.PrefabCopyableComponent;
 import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
@@ -66,27 +50,29 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
   public static ComponentType<ChunkStore, ItemDisplayBlock> TYPE;
 
   private UUID anchoredEntityId;
-  private Vector3d displayTransform;
-  private Float displayScale;
+  private DisplayTransform displayTransform;
+  private DisplayOrientation displayOrientation;
+  private DisplayKind displayKind;
   private Set<String> allowedItems;
   private Set<String> allowedBlockTypes;
   private Set<String> itemFilter;
 
   public ItemDisplayBlock() {
-    this(null, null, null, null, null);
+    this(null, new DisplayTransform(), DisplayOrientation.HORIZONTAL, DisplayKind.DEFAULT, null, null);
   }
 
-  public ItemDisplayBlock(UUID attachedEntity, Vector3d displayTransform, Float displayScale, Set<String> allowedItems, Set<String> allowedResourceTypes) {
+  public ItemDisplayBlock(UUID attachedEntity, DisplayTransform displayTransform, DisplayOrientation displayOrientation, DisplayKind displayKind, Set<String> allowedItems, Set<String> allowedResourceTypes) {
     this.anchoredEntityId = attachedEntity;
     this.displayTransform = displayTransform;
-    this.displayScale = displayScale;
+    this.displayOrientation = displayOrientation;
+    this.displayKind = displayKind;
     this.allowedItems = allowedItems;
     this.allowedBlockTypes = allowedResourceTypes;
     this.itemFilter = null;
   }
 
   public ItemDisplayBlock(ItemDisplayBlock other) {
-    this(other.anchoredEntityId, other.displayTransform, other.displayScale, other.allowedItems, other.allowedBlockTypes);
+    this(other.anchoredEntityId, other.displayTransform, other.displayOrientation, other.displayKind, other.allowedItems, other.allowedBlockTypes);
   }
 
   public UUID getAnchoredEntityId() {
@@ -97,20 +83,28 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
     this.anchoredEntityId = attachedEntity;
   }
 
-  public Vector3d getDisplayTransform() {
+  public DisplayTransform getDisplayTransform() {
     return displayTransform;
   }
 
-  public void setDisplayTransform(Vector3d displayTransform) {
+  public void setDisplayTransform(DisplayTransform displayTransform) {
     this.displayTransform = displayTransform;
   }
 
-  public Float getDisplayScale() {
-    return displayScale;
+  public DisplayOrientation getDisplayOrientation() {
+    return displayOrientation;
   }
 
-  public void setDisplayScale(Float displayScale) {
-    this.displayScale = displayScale;
+  public void setDisplayOrientation(DisplayOrientation displayOrientation) {
+    this.displayOrientation = displayOrientation;
+  }
+
+  public DisplayKind getDisplayKind() {
+    return displayKind;
+  }
+
+  public void setDisplayOrientation(DisplayKind displayKind) {
+    this.displayKind = displayKind;
   }
 
   public Set<String> getAllowedItems() {
@@ -155,14 +149,13 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
       return;
     }
 
-    DisplayTransform transform = this.computeTransform(pos, blockType, rotationIndex);
-    DisplayVisual visual = this.resolveVisual(item);
+    DisplayTransform transform = this.computeTransform(pos, item, rotationIndex);
+
     commandBuffer.run((store) -> {
-      Holder<EntityStore> holder = EntityStore.REGISTRY.newHolder();
-      this.buildEntity(holder, store, itemStack, transform, visual);
+      Holder<EntityStore> holder = DisplayUtils.createDisplayEntity(store, item, itemStack, transform, displayKind);
       UUID uuid = UUID.randomUUID();
       holder.putComponent(UUIDComponent.getComponentType(), new UUIDComponent(uuid));
-      holder.putComponent(DisplayedItemComponent.getComponentType(), new DisplayedItemComponent(itemStack, pos, transform.position()));
+      holder.putComponent(DisplayedItemComponent.getComponentType(), new DisplayedItemComponent(itemStack, pos, transform.getPosition()));
       store.addEntity(holder, AddReason.SPAWN);
       this.setAnchoredEntityId(uuid);
       chunk.getWorld().performBlockUpdate(pos.x, pos.y, pos.z);
@@ -189,15 +182,15 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
       if (displayComponent != null) {
         ItemStack itemStack = displayComponent.getItemStack();
         if (itemStack != null && !ItemStack.isEmpty(itemStack)) {
-          Vector3d displayPos = getDisplayPosition(pos, blockType, rotationIndex);
+          Vector3d dropPosition = displayComponent.getDropPosition();
 
           Player playerComponent = ref != null ? store.getComponent(ref, Player.getComponentType()) : null;
           if (playerComponent != null) {
-            itemStack = ItemUtils.pickupItem(playerComponent, itemStack, displayPos, store, ref);
+            itemStack = ItemUtils.pickupItem(playerComponent, itemStack, dropPosition, store, ref);
           }
 
           if (!ItemStack.isEmpty(itemStack)) {
-            ItemUtils.spawnItem(store, itemStack, displayPos);
+            ItemUtils.spawnItem(store, itemStack, dropPosition);
           }
         }
       }
@@ -219,103 +212,6 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
       } else {
         this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, FULL_STATE);
       }
-    }
-  }
-
-  private void loadItemFilter() {
-    itemFilter = new HashSet<>();
-
-    Map<String, Item> items = Item.getAssetMap().getAssetMap();
-    if (allowedItems != null && !allowedItems.isEmpty()) {
-      allowedItems.forEach(glob -> {
-        String globLower = glob.toLowerCase();
-        items.keySet().forEach(id -> {
-          if (StringUtil.isGlobMatching(globLower, id.toLowerCase())) {
-            itemFilter.add(id);
-          }
-        });
-      });
-    }
-
-    if (allowedBlockTypes != null) {
-      allowedBlockTypes.forEach(id -> {
-        BlockTypeListAsset blockTypeList = BlockTypeListAsset.getAssetMap().getAsset(id);
-        if (blockTypeList != null) {
-          itemFilter.addAll(blockTypeList.getBlockTypeKeys());
-        }
-      });
-    }
-  }
-
-  private DisplayTransform computeTransform(Vector3i pos, BlockType blockType, int rotationIndex) {
-    Vector3d displayPos = getDisplayPosition(pos, blockType, rotationIndex);
-    Vector3f rotation = getDisplayRotation(rotationIndex);
-    return new DisplayTransform(displayPos, rotation);
-  }
-
-  private Vector3d getDisplayPosition(Vector3i pos, BlockType blockType, int rotationIndex) {
-    Vector3d blockCenter = new Vector3d();
-    blockType.getBlockCenter(rotationIndex, blockCenter);
-    Vector3d worldPos = new Vector3d(pos.x, pos.y, pos.z).add(blockCenter);
-    if (displayTransform != null) {
-      return worldPos.add(displayTransform);
-    }
-    return worldPos;
-  }
-
-  private Vector3f getDisplayRotation(int rotationIndex) {
-    RotationTuple rotationTuple = RotationTuple.get(rotationIndex);
-    return new Vector3d(
-        rotationTuple.pitch().getRadians(),
-        rotationTuple.yaw().getRadians(),
-        rotationTuple.roll().getRadians()
-    ).toVector3f();
-  }
-
-  private DisplayVisual resolveVisual(@Nonnull Item item) {
-    Model model = ItemUtils.getItemModel(item);
-    DisplayKind displayKind = model != null ? DisplayKind.MODEL : (item.hasBlockType() ? DisplayKind.BLOCK : DisplayKind.ITEM);
-    return new DisplayVisual(model, displayScale != null ? displayScale : 1.0F, displayKind);
-  }
-
-  private void buildEntity(Holder<EntityStore> holder, Store<EntityStore> store, ItemStack itemStack, DisplayTransform transform, DisplayVisual visual) {
-    holder.addComponent(NetworkId.getComponentType(), new NetworkId(store.getExternalData().takeNextNetworkId()));
-    holder.addComponent(TransformComponent.getComponentType(), new TransformComponent(transform.position(), transform.rotation()));
-    holder.addComponent(PreventPickup.getComponentType(), PreventPickup.INSTANCE);
-    holder.addComponent(PreventItemMerging.getComponentType(), PreventItemMerging.INSTANCE);
-    holder.addComponent(HeadRotation.getComponentType(), new HeadRotation(transform.rotation()));
-    holder.addComponent(PropComponent.getComponentType(), PropComponent.get());
-    Interactions interactions = new Interactions();
-    interactions.setInteractionId(InteractionType.Use, "SimpleItemDisplays_Remove_Displayed_Item");
-    interactions.setInteractionHint("server.interactionHints.pickup");
-    holder.addComponent(Interactions.getComponentType(), interactions);
-    holder.ensureComponent(UUIDComponent.getComponentType());
-    holder.ensureComponent(Interactable.getComponentType());
-    holder.ensureComponent(PrefabCopyableComponent.getComponentType());
-    this.applyVisual(holder, itemStack, visual);
-  }
-
-  private void applyVisual(Holder<EntityStore> holder, ItemStack itemStack, DisplayVisual visual) {
-    ItemStack displayStack = new ItemStack(itemStack.getItemId(), 1);
-    displayStack.setOverrideDroppedItemAnimation(true);
-    switch (visual.kind()) {
-      case MODEL:
-        holder.addComponent(ModelComponent.getComponentType(), new ModelComponent(visual.model()));
-        Item item = Item.getAssetMap().getAsset(itemStack.getItemId());
-        if (item == null) {
-          return;
-        }
-        holder.addComponent(PersistentModel.getComponentType(), new PersistentModel(new Model.ModelReference(ItemUtils.getItemModelId(item), visual.scale(), null, true)));
-        holder.addComponent(ItemComponent.getComponentType(), new ItemComponent(displayStack));
-        break;
-      case BLOCK:
-        holder.addComponent(BlockEntity.getComponentType(), new BlockEntity(itemStack.getItemId()));
-        holder.addComponent(EntityScaleComponent.getComponentType(), new EntityScaleComponent(visual.scale()));
-        holder.addComponent(ItemComponent.getComponentType(), new ItemComponent(displayStack));
-        break;
-      case ITEM:
-        holder.addComponent(ItemComponent.getComponentType(), new ItemComponent(displayStack));
-        holder.addComponent(EntityScaleComponent.getComponentType(), new EntityScaleComponent(visual.scale()));
     }
   }
 
@@ -364,6 +260,41 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
     SoundUtil.playSoundEvent3d(ref, soundEventIndex, (double) pos.x + (double) 0.5F, (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, commandBuffer);
   }
 
+  private void loadItemFilter() {
+    itemFilter = new HashSet<>();
+
+    Map<String, Item> items = Item.getAssetMap().getAssetMap();
+    if (allowedItems != null && !allowedItems.isEmpty()) {
+      allowedItems.forEach(glob -> {
+        String globLower = glob.toLowerCase();
+        items.keySet().forEach(id -> {
+          if (StringUtil.isGlobMatching(globLower, id.toLowerCase())) {
+            itemFilter.add(id);
+          }
+        });
+      });
+    }
+
+    if (allowedBlockTypes != null) {
+      allowedBlockTypes.forEach(id -> {
+        BlockTypeListAsset blockTypeList = BlockTypeListAsset.getAssetMap().getAsset(id);
+        if (blockTypeList != null) {
+          itemFilter.addAll(blockTypeList.getBlockTypeKeys());
+        }
+      });
+    }
+  }
+
+  private DisplayTransform computeTransform(Vector3i pos, Item item, int rotationIndex) {
+    if (displayTransform != null) {
+      float scale = displayTransform.getScale();
+      DisplayTransform newTransform = DisplayUtils.getDisplayTransform(pos, item, rotationIndex, displayOrientation, scale);
+      return displayTransform.clone().add(newTransform);
+    }
+
+    return DisplayUtils.getDisplayTransform(pos, item, rotationIndex, displayOrientation, 1.0F);
+  }
+
   public static ComponentType<ChunkStore, ItemDisplayBlock> getComponentType() {
     return TYPE;
   }
@@ -381,14 +312,19 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
             (component) -> component.anchoredEntityId)
         .add();
     builder
-        .append(new KeyedCodec<>("DisplayTransform", Vector3d.CODEC),
-            (component, displayTransform) -> component.displayTransform = displayTransform,
+        .append(new KeyedCodec<>("DisplayTransform", DisplayTransform.CODEC),
+            (component, displayTransform) -> component.displayTransform = Objects.requireNonNullElseGet(displayTransform, DisplayTransform::new),
             (component) -> component.displayTransform)
         .add();
     builder
-        .append(new KeyedCodec<>("DisplayScale", Codec.FLOAT),
-            (component, displayScale) -> component.displayScale = displayScale,
-            (component) -> component.displayScale)
+        .append(new KeyedCodec<>("DisplayKind", DisplayKind.CODEC),
+            (component, displayKind) -> component.displayKind = Objects.requireNonNullElse(displayKind, DisplayKind.DEFAULT),
+            (component) -> component.displayKind)
+        .add();
+    builder
+        .append(new KeyedCodec<>("DisplayOrientation", DisplayOrientation.CODEC),
+            (component, displayOrientation) -> component.displayOrientation = Objects.requireNonNullElse(displayOrientation, DisplayOrientation.HORIZONTAL),
+            (component) -> component.displayOrientation)
         .add();
     builder
         .append(new KeyedCodec<>("AllowedItems", Codec.STRING_ARRAY),

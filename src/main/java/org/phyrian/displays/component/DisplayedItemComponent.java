@@ -49,6 +49,14 @@ public class DisplayedItemComponent implements Component<EntityStore> {
     this.displayPosition = pos;
   }
 
+  public Vector3d getDropPosition() {
+    return this.dropPosition;
+  }
+
+  public void setDropPosition(Vector3d pos) {
+    this.dropPosition = pos;
+  }
+
   public static ComponentType<EntityStore, DisplayedItemComponent> getComponentType() {
     return TYPE;
   }
