@@ -1,5 +1,6 @@
 {
   "TranslationProperties": {
+    "Description": "items.SimpleItemDisplays_Desc_Customizable.description",
     "Name": "items.SimpleItemDisplays_Feran_Flowerpot.name"
   },
   "Icon": "Icons/ItemsGenerated/SimpleItemDisplays/Feran_Flowerpot.png",
@@ -82,28 +83,5 @@
       "Human"
     ]
   },
-  "ItemSoundSetId": "ISS_Blocks_Wood",
-  "Recipe": {
-    "Input": [
-      {
-        "ItemId": "Soil_Clay",
-        "Quantity": 3
-      },
-      {
-        "ItemId": "Soil_Dirt",
-        "Quantity": 1
-      }
-    ],
-    "TimeSeconds": 0,
-    "BenchRequirement": [
-      {
-        "Id": "Furniture_Bench",
-        "Type": "Crafting",
-        "Categories": [
-          "Furniture_Misc"
-        ]
-      }
-    ],
-    "OutputQuantity": 1
-  }
+  "ItemSoundSetId": "ISS_Blocks_Wood"
 }

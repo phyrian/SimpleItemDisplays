@@ -1,5 +1,6 @@
 {
   "TranslationProperties": {
+    "Description": "items.SimpleItemDisplays_Desc_Customizable.description",
     "Name": "items.SimpleItemDisplays_Village_Flowerpot.name"
   },
   "Icon": "Icons/ItemsGenerated/SimpleItemDisplays/Village_Flowerpot.png",
