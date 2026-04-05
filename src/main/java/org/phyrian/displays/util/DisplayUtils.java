@@ -41,17 +41,10 @@ public class DisplayUtils {
   private DisplayUtils() {
   }
 
+  // I've wasted too many hours on this, and it currently does work for most blocks.
   public static DisplayTransform getDisplayTransform(Vector3i pos, Item item, int rotationIndex, DisplayOrientation orientation, float scale) {
     RotationTuple rotationTuple = RotationTuple.get(rotationIndex);
     Box boundingBox = ItemUtils.getItemBoundingBox(item);
-
-    LOGGER.atInfo().log( "Calculating display transform..."
-        + "\nitem:" + item.getId()
-        + "\nmodel:" + item.getModel()
-        + "\nbox:" + boundingBox
-        + "\nrotationIndex:" + rotationIndex
-        + "\nrotationTuple:" + rotationTuple
-    );
 
     Vector3d displayPosition = new Vector3d(pos.x, pos.y, pos.z);
     Vector3f displayRotation = new Vector3d(
@@ -60,14 +53,17 @@ public class DisplayUtils {
         rotationTuple.roll().getRadians()
     ).toVector3f();
 
+    boolean zAdjusted = false;
     if (boundingBox != null) {
-      if (boundingBox.width() > boundingBox.depth() && boundingBox.width() > 1.0) {
+      if (boundingBox.width() > 1.0) {
         Vector3d dv = getHorizontalAlignment(boundingBox.width(), scale);
         displayPosition.add(rotationTuple.rotatedVector(dv));
-      } else if (boundingBox.depth() > boundingBox.width() && boundingBox.depth() > 1.0) {
+      }
+      if (boundingBox.depth() > 1.0) {
         Vector3d dv = getHorizontalAlignment(boundingBox.depth(), scale);
         displayPosition.add(rotationTuple.rotatedVector(dv.negate()));
         displayRotation.addRotationOnAxis(Axis.Y, -90);
+        zAdjusted = true;
       }
     }
 
@@ -75,23 +71,34 @@ public class DisplayUtils {
       double height = boundingBox != null ? boundingBox.height() : 1.0;
       Vector3d dv = getVerticalAlignment(height, scale);
       displayPosition.add(rotationTuple.rotatedVector(dv));
-      displayRotation.addRotationOnAxis(Axis.X, rotationIndex % 8 == 0 ? 90 : -90);
-      displayRotation.addRotationOnAxis(Axis.Y, 180);
+      if (rotationIndex % 8 == 0) {
+        if (zAdjusted) {
+          displayRotation.addRotationOnAxis(Axis.Z, -90);
+          if (rotationIndex == 0) {
+            displayRotation.addRotationOnAxis(Axis.Y, 180);
+          }
+        } else {
+          displayRotation.addRotationOnAxis(Axis.X, 90);
+          displayRotation.addRotationOnAxis(Axis.Y, 180);
+        }
+      } else {
+        displayRotation.addRotationOnAxis(Axis.X, -90);
+        displayRotation.addRotationOnAxis(Axis.Y, 180);
+      }
     }
 
     return new DisplayTransform(displayPosition, displayRotation);
   }
 
+  /**
+   * Calculate the adjustment needed for the display entity the entity occupies more than a single block.
+   * Note: this method only works for multiblock blocks where the placement starts from the front-left corner (e.g.: workbenches, tables, shallow roofs).
+   * @param scale of the displayed entity
+   * @return the correction vector
+   */
   private static Vector3d getHorizontalAlignment(double length, float scale/*, int rotationIndex*/) {
     double d = (length / 2.0d) * (scale * 0.25d);
     return new Vector3d(d, 0, 0);
-//    return switch (rotationIndex) {
-//      case 0, 4, 8 -> new Vector3d(d, 0, 0);
-//      case 5 -> new Vector3d(0, 0, -d);
-//      case 6 -> new Vector3d(-d, 0, 0);
-//      case 7 -> new Vector3d(0, 0, d);
-//      default -> new Vector3d();
-//    };
   }
 
   /**
@@ -102,11 +109,8 @@ public class DisplayUtils {
   public static Vector3d getVerticalAlignment(double height, float scale) {
     double cy = -0.425d;
     double cz = 0.5 - (scale * 0.25d); // scaled diff from center on Z
-    if (height > 1) {
-      double dz = (height / 2.0d) * (scale * 0.25d);
-      return new Vector3d(0, cy, -cz + dz);
-    }
-    return new Vector3d(0, cy, -cz);
+    double dz = height > 1 ? (height / 2.0d) * (scale * 0.25d) : 0d;
+    return new Vector3d(0, cy, -cz + dz);
   }
 
   public static Holder<EntityStore> createDisplayEntity(Store<EntityStore> store, Item item, ItemStack itemStack, DisplayTransform transform, DisplayKind displayKind) {
