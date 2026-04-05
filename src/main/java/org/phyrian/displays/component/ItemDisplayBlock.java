@@ -32,11 +32,11 @@ import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.buildertool.config.BlockTypeListAsset;
 import com.hypixel.hytale.server.core.asset.type.item.config.Item;
-import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.world.SoundUtil;
+import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -211,6 +211,29 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
         this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, DEFAULT_STATE);
       } else {
         this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, FULL_STATE);
+      }
+    }
+  }
+
+  public void onDestroy(CommandBuffer<EntityStore> commandBuffer, World world) {
+    if (this.anchoredEntityId != null) {
+      Ref<EntityStore> anchoredEntity = world.getEntityStore().getRefFromUUID(this.anchoredEntityId);
+      if (anchoredEntity != null) {
+        commandBuffer.run((store) -> {
+          DisplayedItemComponent displayComponent = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
+          if (displayComponent != null) {
+            ItemStack itemStack = displayComponent.getItemStack();
+            if (itemStack != null && !ItemStack.isEmpty(itemStack)) {
+              Vector3d dropPosition = displayComponent.getDropPosition();
+              ItemUtils.spawnItem(store, itemStack, dropPosition);
+            }
+          }
+
+          store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
+          this.setAnchoredEntityId(null);
+        });
+      } else {
+        this.setAnchoredEntityId(null);
       }
     }
   }
