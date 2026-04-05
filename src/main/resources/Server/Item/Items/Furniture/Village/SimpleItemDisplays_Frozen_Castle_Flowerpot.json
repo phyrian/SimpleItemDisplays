@@ -1,0 +1,87 @@
+{
+  "TranslationProperties": {
+    "Description": "items.SimpleItemDisplays_Desc_Customizable.description",
+    "Name": "items.SimpleItemDisplays_Frozen_Castle_Flowerpot.name"
+  },
+  "Icon": "Icons/ItemsGenerated/SimpleItemDisplays/Frozen_Castle_Flowerpot.png",
+  "Categories": [
+    "Furniture.Containers"
+  ],
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "CustomModel": "Blocks/SimpleItemDisplays/Frozen_Castle_Flowerpot.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Blocks/SimpleItemDisplays/Frozen_Castle_Flowerpot_Texture.png",
+        "Weight": 1
+      }
+    ],
+    "RandomRotation": "YawStep1",
+    "HitboxType": "SimpleItemDisplays_Flowerpot",
+    "Gathering": {
+      "Soft": {
+        "ItemId": "SimpleItemDisplays_Frozen_Castle_Flowerpot"
+      }
+    },
+    "BlockSoundSetId": "Ice",
+    "BlockParticleSetId": "Ice",
+    "ParticleColor": "#adfefa",
+    "Support": {
+      "Down": [
+        {
+          "FaceType": "Full"
+        }
+      ]
+    },
+    "BlockEntity": {
+      "Components": {
+        "SimpleItemDisplays_ItemDisplayBlock": {
+          "DisplayTransform": {
+            "Position": {
+              "X": 0.5,
+              "Y": 0.5,
+              "Z": 0.5
+            }
+          },
+          "AllowedBlockTypes": [
+            "SimpleItemDisplays_FlowerpotPlants"
+          ]
+        }
+      }
+    },
+    "InteractionHitboxType": "SimpleItemDisplays_Flowerpot",
+    "Interactions": {
+      "Use": "SimpleItemDisplays_Display_Item"
+    },
+    "State": {
+      "Definitions": {
+        "Full": {
+          "InteractionHint": "server.interactionHints.SimpleItemDisplays_removeItem",
+          "InteractionSoundEventId": "SFX_Grass_Build"
+        }
+      }
+    },
+    "InteractionHint": "server.interactionHints.SimpleItemDisplays_addItem",
+    "InteractionSoundEventId": "SFX_Leaves_Break"
+  },
+  "PlayerAnimationsId": "Block",
+  "ResourceTypes": [
+    {
+      "Id": "Fuel"
+    },
+    {
+      "Id": "Charcoal"
+    }
+  ],
+  "Tags": {
+    "Type": [
+      "Furniture"
+    ],
+    "Family": [
+      "Human"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Blocks_Wood"
+}

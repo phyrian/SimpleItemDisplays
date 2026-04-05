@@ -1,6 +1,7 @@
 {
   "Blocks": [
-    "SimpleItemDisplays_Village_Flowerpot",
-    "SimpleItemDisplays_Feran_Flowerpot"
+    "SimpleItemDisplays_Feran_Flowerpot",
+    "SimpleItemDisplays_Frozen_Castle_Flowerpot",
+    "SimpleItemDisplays_Village_Flowerpot"
   ]
 }
