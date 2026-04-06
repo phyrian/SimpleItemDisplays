@@ -39,8 +39,6 @@ public class PlaceBlockEventSystem extends EntityEventSystem<EntityStore, PlaceB
     WorldChunk chunk = world.getChunk(indexChunk);
     BlockType blockType = world.getBlockType(pos);
 
-    LOGGER.atInfo().log("Placing block at " + pos + "): " + blockType);
-
     if (blockType == null || chunk == null) {
       return;
     }

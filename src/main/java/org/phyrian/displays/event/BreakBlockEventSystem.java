@@ -38,8 +38,6 @@ public class BreakBlockEventSystem extends EntityEventSystem<EntityStore, BreakB
     WorldChunk chunk = world.getChunk(indexChunk);
     BlockType blockType = world.getBlockType(pos);
 
-    LOGGER.atInfo().log("Breaking block at " + pos + ": " + blockType);
-
     if (blockType == null || chunk == null) {
       return;
     }
