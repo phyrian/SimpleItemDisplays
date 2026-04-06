@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
 import org.phyrian.displays.config.DisplayKind;
 import org.phyrian.displays.config.DisplayOrientation;
 import org.phyrian.displays.config.DisplayTransform;
-import org.phyrian.displays.util.ItemUtils;
 import org.phyrian.displays.util.DisplayUtils;
 
 import com.hypixel.hytale.codec.Codec;
@@ -27,13 +26,11 @@ import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Holder;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
-import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.buildertool.config.BlockTypeListAsset;
 import com.hypixel.hytale.server.core.asset.type.item.config.Item;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
-import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.World;
@@ -152,7 +149,7 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
     DisplayTransform transform = this.computeTransform(pos, item, rotationIndex);
 
     commandBuffer.run((store) -> {
-      Holder<EntityStore> holder = DisplayUtils.createDisplayEntity(store, item, itemStack, transform, displayKind);
+      Holder<EntityStore> holder = DisplayUtils.createDisplayEntity(store, itemStack, transform, displayKind);
       UUID uuid = UUID.randomUUID();
       holder.putComponent(UUIDComponent.getComponentType(), new UUIDComponent(uuid));
       holder.putComponent(DisplayedItemComponent.getComponentType(), new DisplayedItemComponent(itemStack, pos, transform.getPosition()));
@@ -180,19 +177,7 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
     commandBuffer.run((store) -> {
       DisplayedItemComponent displayComponent = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
       if (displayComponent != null) {
-        ItemStack itemStack = displayComponent.getItemStack();
-        if (itemStack != null && !ItemStack.isEmpty(itemStack)) {
-          Vector3d dropPosition = displayComponent.getDropPosition();
-
-          Player playerComponent = ref != null ? store.getComponent(ref, Player.getComponentType()) : null;
-          if (playerComponent != null) {
-            itemStack = ItemUtils.pickupItem(playerComponent, itemStack, dropPosition, store, ref);
-          }
-
-          if (!ItemStack.isEmpty(itemStack)) {
-            ItemUtils.spawnItem(store, itemStack, dropPosition);
-          }
-        }
+        displayComponent.dropItem(store, ref);
       }
 
       store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
@@ -222,11 +207,7 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
         commandBuffer.run((store) -> {
           DisplayedItemComponent displayComponent = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
           if (displayComponent != null) {
-            ItemStack itemStack = displayComponent.getItemStack();
-            if (itemStack != null && !ItemStack.isEmpty(itemStack)) {
-              Vector3d dropPosition = displayComponent.getDropPosition();
-              ItemUtils.spawnItem(store, itemStack, dropPosition);
-            }
+            displayComponent.dropItem(store);
           }
 
           store.removeEntity(anchoredEntity, RemoveReason.REMOVE);

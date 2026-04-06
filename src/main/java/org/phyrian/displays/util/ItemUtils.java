@@ -1,12 +1,8 @@
 package org.phyrian.displays.util;
 
-import java.util.Map.Entry;
-import java.util.Objects;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import com.hypixel.hytale.builtin.model.ModelPlugin;
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.Holder;
@@ -17,23 +13,15 @@ import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.asset.type.blockhitbox.BlockBoundingBoxes;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
-import com.hypixel.hytale.server.core.asset.type.entityeffect.config.ModelOverride;
 import com.hypixel.hytale.server.core.asset.type.item.config.AssetIconProperties;
 import com.hypixel.hytale.server.core.asset.type.item.config.Item;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model;
-import com.hypixel.hytale.server.core.asset.type.model.config.Model.ModelReference;
 import com.hypixel.hytale.server.core.asset.type.model.config.ModelAsset;
-import com.hypixel.hytale.server.core.asset.type.model.config.ModelAttachment;
 import com.hypixel.hytale.server.core.entity.entities.Player;
-import com.hypixel.hytale.server.core.inventory.InventoryComponent;
-import com.hypixel.hytale.server.core.inventory.InventoryComponent.Tool;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.inventory.transaction.ItemStackTransaction;
 import com.hypixel.hytale.server.core.modules.entity.item.ItemComponent;
-import com.hypixel.hytale.server.core.modules.entity.system.ModelSystems;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-
-import static org.phyrian.displays.SimpleItemDisplaysPlugin.LOGGER;
 
 public class ItemUtils {
 
@@ -49,10 +37,10 @@ public class ItemUtils {
       Holder<EntityStore> pickupItemHolder = ItemComponent.generatePickedUpItem(itemStack, position, componentAccessor, ref);
       componentAccessor.addEntity(pickupItemHolder, AddReason.SPAWN);
     } else if (!remainder.equals(itemStack)) {
-      int quantity = itemStack.getQuantity() - remainder.getQuantity();
-      if (quantity > 0) {
-        ItemStack pickedUpItemStack = itemStack.withQuantity(quantity);
-        playerComponent.notifyPickupItem(ref, itemStack, position, componentAccessor);
+      int pickedUpQuantity = itemStack.getQuantity() - remainder.getQuantity();
+      ItemStack pickedUpItemStack = itemStack.withQuantity(pickedUpQuantity);
+      if (pickedUpItemStack != null) {
+        playerComponent.notifyPickupItem(ref, pickedUpItemStack, position, componentAccessor);
         Holder<EntityStore> pickupItemHolder = ItemComponent.generatePickedUpItem(pickedUpItemStack, position, componentAccessor, ref);
         componentAccessor.addEntity(pickupItemHolder, AddReason.SPAWN);
       }
@@ -61,7 +49,7 @@ public class ItemUtils {
     return remainder;
   }
 
-  public static void spawnItem(ComponentAccessor<EntityStore> store, ItemStack itemStack, Vector3d position) {
+  public static void spawnItem(ItemStack itemStack, Vector3d position, ComponentAccessor<EntityStore> store) {
     Holder<EntityStore> holder = ItemComponent.generateItemDrop(store, itemStack, position, Vector3f.ZERO, 0.0F, 0.0F, 0.0F);
     if (holder != null) {
       ItemComponent itemcomponent = holder.getComponent(ItemComponent.getComponentType());
@@ -93,7 +81,7 @@ public class ItemUtils {
       if (modelAsset != null) {
         return modelAsset.getBoundingBox();
       }
-      // TODO: find a way to load item model - above code does not find it
+      // TODO: find a way to load item model
     }
 
     if (item.hasBlockType()) {
@@ -123,5 +111,10 @@ public class ItemUtils {
     }
 
     return null;
+  }
+
+  public static ItemStack copyItemStack(ItemStack itemStack) {
+    //noinspection deprecation
+    return new ItemStack(itemStack.getItemId(), itemStack.getQuantity(), itemStack.getDurability(), itemStack.getMaxDurability(), itemStack.getMetadata());
   }
 }

@@ -20,6 +20,8 @@ import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
+import static org.phyrian.displays.SimpleItemDisplaysPlugin.LOGGER;
+
 public class BreakBlockEventSystem extends EntityEventSystem<EntityStore, BreakBlockEvent> {
 
   public BreakBlockEventSystem() {
@@ -35,6 +37,8 @@ public class BreakBlockEventSystem extends EntityEventSystem<EntityStore, BreakB
     long indexChunk = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
     WorldChunk chunk = world.getChunk(indexChunk);
     BlockType blockType = world.getBlockType(pos);
+
+    LOGGER.atInfo().log("Breaking block at " + pos + ": " + blockType);
 
     if (blockType == null || chunk == null) {
       return;

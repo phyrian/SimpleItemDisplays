@@ -1,12 +1,17 @@
 package org.phyrian.displays.component;
 
+import org.phyrian.displays.util.ItemUtils;
+
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec.Builder;
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
+import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3i;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
@@ -55,6 +60,25 @@ public class DisplayedItemComponent implements Component<EntityStore> {
 
   public void setDropPosition(Vector3d pos) {
     this.dropPosition = pos;
+  }
+
+  public void dropItem(Store<EntityStore> store) {
+    if (itemStack != null && !ItemStack.isEmpty(itemStack)) {
+      ItemUtils.spawnItem(itemStack, dropPosition, store);
+    }
+  }
+
+  public void dropItem(Store<EntityStore> store, Ref<EntityStore> ref) {
+    if (itemStack != null && !ItemStack.isEmpty(itemStack)) {
+      Player playerComponent = store.getComponent(ref, Player.getComponentType());
+      if (playerComponent != null) {
+        itemStack = ItemUtils.pickupItem(playerComponent, itemStack, dropPosition, store, ref);
+      }
+
+      if (!ItemStack.isEmpty(itemStack)) {
+        ItemUtils.spawnItem(itemStack, dropPosition, store);
+      }
+    }
   }
 
   public static ComponentType<EntityStore, DisplayedItemComponent> getComponentType() {

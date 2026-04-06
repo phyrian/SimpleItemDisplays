@@ -113,16 +113,16 @@ public class DisplayUtils {
     return new Vector3d(0, cy, -cz + dz);
   }
 
-  public static Holder<EntityStore> createDisplayEntity(Store<EntityStore> store, Item item, ItemStack itemStack, DisplayTransform transform, DisplayKind displayKind) {
+  public static Holder<EntityStore> createDisplayEntity(Store<EntityStore> store, ItemStack itemStack, DisplayTransform transform, DisplayKind displayKind) {
     Holder<EntityStore> holder = EntityStore.REGISTRY.newHolder();
     holder.addComponent(NetworkId.getComponentType(), new NetworkId(store.getExternalData().takeNextNetworkId()));
     holder.addComponent(TransformComponent.getComponentType(), new TransformComponent(transform.getPosition(), transform.getRotation()));
 
-    Item displayedItem = item != null ? item : Item.UNKNOWN;
+    ItemStack displayStack = ItemUtils.copyItemStack(itemStack);
+    Item displayedItem = displayStack.getItem();
     float displayScale = transform.getScale();
     applyVisual(holder, displayedItem, displayScale, displayKind);
 
-    ItemStack displayStack = new ItemStack(itemStack.getItemId(), itemStack.getQuantity());
     displayStack.setOverrideDroppedItemAnimation(true);
     holder.addComponent(ItemComponent.getComponentType(), new ItemComponent(displayStack));
     holder.addComponent(PreventPickup.getComponentType(), PreventPickup.INSTANCE);
