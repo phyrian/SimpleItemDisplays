@@ -1,5 +1,7 @@
 package org.phyrian.displays.util;
 
+import java.util.Objects;
+
 import org.phyrian.displays.config.DisplayKind;
 import org.phyrian.displays.config.DisplayOrientation;
 import org.phyrian.displays.config.DisplayTransform;
@@ -44,7 +46,6 @@ public class DisplayUtils {
   // I've wasted too many hours on this, and it currently does work for most blocks.
   public static DisplayTransform getDisplayTransform(Vector3i pos, Item item, int rotationIndex, DisplayOrientation orientation, float scale) {
     RotationTuple rotationTuple = RotationTuple.get(rotationIndex);
-    Box boundingBox = ItemUtils.getItemBoundingBox(item);
 
     Vector3d displayPosition = new Vector3d(pos.x, pos.y, pos.z);
     Vector3f displayRotation = new Vector3d(
@@ -53,60 +54,81 @@ public class DisplayUtils {
         rotationTuple.roll().getRadians()
     ).toVector3f();
 
-    boolean zAdjusted = false;
-    if (boundingBox != null) {
-      if (boundingBox.width() > 1.0) {
-        Vector3d dv = getHorizontalAlignment(boundingBox.width(), scale);
-        displayPosition.add(rotationTuple.rotatedVector(dv));
-      }
-      if (boundingBox.depth() > 1.0) {
-        Vector3d dv = getHorizontalAlignment(boundingBox.depth(), scale);
-        displayPosition.add(rotationTuple.rotatedVector(dv.negate()));
-        displayRotation.addRotationOnAxis(Axis.Y, -90);
-        zAdjusted = true;
-      }
-    }
-
-    if (orientation == DisplayOrientation.VERTICAL) {
-      double height = boundingBox != null ? boundingBox.height() : 1.0;
-      Vector3d dv = getVerticalAlignment(height, scale);
-      displayPosition.add(rotationTuple.rotatedVector(dv));
-      if (rotationIndex % 8 == 0) {
-        if (zAdjusted) {
-          displayRotation.addRotationOnAxis(Axis.Z, -90);
-          if (rotationIndex == 0) {
-            displayRotation.addRotationOnAxis(Axis.Y, 180);
-          }
-        } else {
-          displayRotation.addRotationOnAxis(Axis.X, 90);
-          displayRotation.addRotationOnAxis(Axis.Y, 180);
-        }
-      } else {
-        displayRotation.addRotationOnAxis(Axis.X, -90);
-        displayRotation.addRotationOnAxis(Axis.Y, 180);
-      }
-    }
+    centerDisplayedItem(item, rotationTuple, orientation, scale, displayPosition, displayRotation);
 
     return new DisplayTransform(displayPosition, displayRotation);
   }
 
   /**
-   * Calculate the adjustment needed for the display entity the entity occupies more than a single block.
-   * Note: this method only works for multiblock blocks where the placement starts from the front-left corner (e.g.: workbenches, tables, shallow roofs).
+   * Calculate the adjustment needed for the display entity if the entity occupies more than a single block. Note: this method only works for multiblock blocks where the placement
+   * starts from the front-left corner (e.g.: workbenches, tables, shallow roofs).
+   *
    * @param scale of the displayed entity
-   * @return the correction vector
    */
-  private static Vector3d getHorizontalAlignment(double length, float scale/*, int rotationIndex*/) {
+  private static void centerDisplayedItem(Item item, RotationTuple rotationTuple, DisplayOrientation orientation, float scale, Vector3d outPosition, Vector3f outRotation) {
+    Box boundingBox = Objects.requireNonNullElse(ItemUtils.getItemBoundingBox(item), Box.UNIT);
+
+    LOGGER.atFine().log("""
+            Aligning item: %s
+             - box: %s
+             - rotationTuple: %s
+             - orientation: %s
+             - inPosition: %s
+             - inRotation: %s""",
+        item.getId(), boundingBox.toString(), rotationTuple.toString(), orientation.toString(), outPosition.toString(), outRotation.toString());
+
+    if (boundingBox.width() > 1.0) {
+      Vector3d dv = getHorizontalAlignment(boundingBox.min.x, boundingBox.max.x, scale);
+      outPosition.add(rotationTuple.rotatedVector(dv));
+    }
+
+    boolean rotated = false;
+    if (boundingBox.depth() > boundingBox.width()) {
+      Vector3d dv = getHorizontalAlignment(boundingBox.min.z, boundingBox.max.z, scale);
+      outPosition.add(rotationTuple.rotatedVector(dv.negate()));
+      outRotation.addRotationOnAxis(Axis.Y, -90);
+      rotated = true;
+    }
+
+    if (orientation == DisplayOrientation.VERTICAL) {
+      Vector3d dv = getVerticalAlignment(boundingBox.min.y, boundingBox.max.y, scale);
+      outPosition.add(rotationTuple.rotatedVector(dv));
+      if (rotationTuple.index() % 8 == 0) {
+        if (rotated) {
+          outRotation.addRotationOnAxis(Axis.Z, -90);
+          if (rotationTuple.index() == 0) {
+            outRotation.addRotationOnAxis(Axis.Y, 180);
+          }
+        } else {
+          outRotation.addRotationOnAxis(Axis.X, 90);
+          outRotation.addRotationOnAxis(Axis.Y, 180);
+        }
+      } else {
+        outRotation.addRotationOnAxis(Axis.X, -90);
+        outRotation.addRotationOnAxis(Axis.Y, 180);
+      }
+    }
+
+    LOGGER.atFine().log("""
+        Aligned item: %s
+         - outPosition: %s
+         - outRotation: %s""", item.getId(), outPosition.toString(), outRotation.toString());
+  }
+
+  private static Vector3d getHorizontalAlignment(double min, double max, float scale) {
+    double length = max - min;
     double d = (length / 2.0d) * (scale * 0.25d);
     return new Vector3d(d, 0, 0);
   }
 
   /**
    * Calculate the adjustment needed for the display entity when using vertical orientation to counter-act the center pivot rotation.
+   *
    * @param scale of the displayed entity
    * @return the correction vector
    */
-  public static Vector3d getVerticalAlignment(double height, float scale) {
+  public static Vector3d getVerticalAlignment(double min, double max, float scale) {
+    double height = max - min;
     double cy = -0.425d;
     double cz = 0.5 - (scale * 0.25d); // scaled diff from center on Z
     double dz = height > 1 ? (height / 2.0d) * (scale * 0.25d) : 0d;
