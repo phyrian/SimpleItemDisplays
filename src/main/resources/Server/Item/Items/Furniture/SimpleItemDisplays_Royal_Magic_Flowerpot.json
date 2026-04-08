@@ -67,14 +67,6 @@
     "InteractionSoundEventId": "SFX_Leaves_Break"
   },
   "PlayerAnimationsId": "Block",
-  "ResourceTypes": [
-    {
-      "Id": "Fuel"
-    },
-    {
-      "Id": "Charcoal"
-    }
-  ],
   "Tags": {
     "Type": [
       "Furniture"

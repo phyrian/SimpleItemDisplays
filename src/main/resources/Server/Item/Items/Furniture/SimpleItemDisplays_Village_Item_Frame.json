@@ -58,14 +58,6 @@
     "InteractionSoundEventId": "SFX_Soft_Break"
   },
   "PlayerAnimationsId": "Block",
-  "ResourceTypes": [
-    {
-      "Id": "Fuel"
-    },
-    {
-      "Id": "Charcoal"
-    }
-  ],
   "Tags": {
     "Type": [
       "Furniture"
