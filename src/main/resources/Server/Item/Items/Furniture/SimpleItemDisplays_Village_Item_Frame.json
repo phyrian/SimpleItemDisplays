@@ -1,0 +1,93 @@
+{
+  "TranslationProperties": {
+    "Name": "items.SimpleItemDisplays_Village_Item_Frame.name"
+  },
+  "Icon": "Icons/ItemsGenerated/SimpleItemDisplays/Village_Item_Frame.png",
+  "Categories": [
+    "Furniture.Containers"
+  ],
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "CustomModel": "Blocks/SimpleItemDisplays/Village_Item_Frame.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Blocks/SimpleItemDisplays/Village_Item_Frame_Texture.png",
+        "Weight": 1
+      }
+    ],
+    "VariantRotation": "DoublePipe",
+    "HitboxType": "SimpleItemDisplays_Item_Frame",
+    "Gathering": {
+      "Soft": {
+        "ItemId": "SimpleItemDisplays_Village_Item_Frame"
+      }
+    },
+    "BlockParticleSetId": "Wood",
+    "BlockSoundSetId": "Wood",
+    "ParticleColor": "#5b3222",
+    "BlockEntity": {
+      "Components": {
+        "SimpleItemDisplays_ItemDisplayBlock": {
+          "DisplayTransform": {
+            "Position": {
+              "X": 0.5,
+              "Y": 0,
+              "Z": 0.5
+            },
+            "Scale": 0.5
+          },
+          "DisplayOrientation": "Vertical"
+        }
+      }
+    },
+    "InteractionHitboxType": "SimpleItemDisplays_Item_Frame",
+    "Interactions": {
+      "Use": "SimpleItemDisplays_Display_Item"
+    },
+    "State": {
+      "Definitions": {
+        "Full": {
+          "InteractionHint": "server.interactionHints.SimpleItemDisplays_removeItem",
+          "InteractionSoundEventId": "SFX_Soft_Build"
+        }
+      }
+    },
+    "InteractionHint": "server.interactionHints.SimpleItemDisplays_addItem",
+    "InteractionSoundEventId": "SFX_Soft_Break"
+  },
+  "PlayerAnimationsId": "Block",
+  "Tags": {
+    "Type": [
+      "Furniture"
+    ],
+    "Family": [
+      "Human"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Blocks_Wood",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Leather_Medium",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Ingredient_Stick",
+        "Quantity": 4
+      }
+    ],
+    "TimeSeconds": 0,
+    "BenchRequirement": [
+      {
+        "Id": "Furniture_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Furniture_Misc"
+        ]
+      }
+    ],
+    "OutputQuantity": 1
+  }
+}

@@ -1,8 +1,9 @@
 {
   "TranslationProperties": {
-    "Name": "items.SimpleItemDisplays_Village_Flowerpot.name"
+    "Description": "items.SimpleItemDisplays_Desc_Customizable.description",
+    "Name": "items.SimpleItemDisplays_Frozen_Castle_Flowerpot.name"
   },
-  "Icon": "Icons/ItemsGenerated/SimpleItemDisplays/Village_Flowerpot.png",
+  "Icon": "Icons/ItemsGenerated/SimpleItemDisplays/Frozen_Castle_Flowerpot.png",
   "Categories": [
     "Furniture.Containers"
   ],
@@ -10,10 +11,10 @@
     "Material": "Solid",
     "DrawType": "Model",
     "Opacity": "Transparent",
-    "CustomModel": "Blocks/SimpleItemDisplays/Village_Flowerpot.blockymodel",
+    "CustomModel": "Blocks/SimpleItemDisplays/Frozen_Castle_Flowerpot.blockymodel",
     "CustomModelTexture": [
       {
-        "Texture": "Blocks/SimpleItemDisplays/Village_Flowerpot_Texture.png",
+        "Texture": "Blocks/SimpleItemDisplays/Frozen_Castle_Flowerpot_Texture.png",
         "Weight": 1
       }
     ],
@@ -21,12 +22,12 @@
     "HitboxType": "SimpleItemDisplays_Flowerpot",
     "Gathering": {
       "Soft": {
-        "ItemId": "SimpleItemDisplays_Village_Flowerpot"
+        "ItemId": "SimpleItemDisplays_Frozen_Castle_Flowerpot"
       }
     },
-    "BlockSoundSetId": "Clay_Pot_Small",
-    "BlockParticleSetId": "Clay",
-    "ParticleColor": "#864c36",
+    "BlockSoundSetId": "Ice",
+    "BlockParticleSetId": "Ice",
+    "ParticleColor": "#adfefa",
     "Support": {
       "Down": [
         {
@@ -38,9 +39,11 @@
       "Components": {
         "SimpleItemDisplays_ItemDisplayBlock": {
           "DisplayTransform": {
-            "X": 0,
-            "Y": 0.25,
-            "Z": 0
+            "Position": {
+              "X": 0.5,
+              "Y": 0.5,
+              "Z": 0.5
+            }
           },
           "AllowedBlockTypes": [
             "SimpleItemDisplays_FlowerpotPlants"
@@ -64,44 +67,13 @@
     "InteractionSoundEventId": "SFX_Leaves_Break"
   },
   "PlayerAnimationsId": "Block",
-  "ResourceTypes": [
-    {
-      "Id": "Fuel"
-    },
-    {
-      "Id": "Charcoal"
-    }
-  ],
   "Tags": {
     "Type": [
       "Furniture"
     ],
     "Family": [
-      "Village"
+      "Human"
     ]
   },
-  "ItemSoundSetId": "ISS_Blocks_Wood",
-  "Recipe": {
-    "Input": [
-      {
-        "ItemId": "Soil_Clay",
-        "Quantity": 3
-      },
-      {
-        "ItemId": "Soil_Dirt",
-        "Quantity": 1
-      }
-    ],
-    "TimeSeconds": 0,
-    "BenchRequirement": [
-      {
-        "Id": "Furniture_Bench",
-        "Type": "Crafting",
-        "Categories": [
-          "Furniture_Misc"
-        ]
-      }
-    ],
-    "OutputQuantity": 1
-  }
+  "ItemSoundSetId": "ISS_Blocks_Wood"
 }

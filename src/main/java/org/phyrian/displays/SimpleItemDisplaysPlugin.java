@@ -4,9 +4,12 @@ import javax.annotation.Nonnull;
 
 import org.phyrian.displays.component.DisplayedItemComponent;
 import org.phyrian.displays.component.ItemDisplayBlock;
+import org.phyrian.displays.event.BlockReplaceEventSystem;
 import org.phyrian.displays.event.BreakBlockEventSystem;
+import org.phyrian.displays.event.PlaceBlockEventSystem;
 import org.phyrian.displays.interaction.DisplayItemInteraction;
 import org.phyrian.displays.interaction.RemoveDisplayedItemInteraction;
+
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
@@ -35,6 +38,8 @@ public class SimpleItemDisplaysPlugin extends JavaPlugin {
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_DisplayItem", DisplayItemInteraction.class, DisplayItemInteraction.CODEC);
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_RemoveDisplayedItem", RemoveDisplayedItemInteraction.class, RemoveDisplayedItemInteraction.CODEC);
     this.getEntityStoreRegistry().registerSystem(new BreakBlockEventSystem());
+    this.getEntityStoreRegistry().registerSystem(new PlaceBlockEventSystem());
+    this.getEntityStoreRegistry().registerSystem(new BlockReplaceEventSystem());
     ItemDisplayBlock.TYPE = this.getChunkStoreRegistry().registerComponent(ItemDisplayBlock.class, "SimpleItemDisplays_ItemDisplayBlock", ItemDisplayBlock.CODEC);
     DisplayedItemComponent.TYPE = this.getEntityStoreRegistry().registerComponent(DisplayedItemComponent.class, "SimpleItemDisplays_DisplayedItem", DisplayedItemComponent.CODEC);
 

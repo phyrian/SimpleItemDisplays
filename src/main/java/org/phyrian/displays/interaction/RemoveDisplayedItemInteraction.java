@@ -6,30 +6,25 @@ import javax.annotation.Nonnull;
 
 import org.phyrian.displays.component.DisplayedItemComponent;
 import org.phyrian.displays.component.ItemDisplayBlock;
-import org.phyrian.displays.util.ItemUtils;
+
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.util.ChunkUtil;
-import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.protocol.InteractionState;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.entity.InteractionContext;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
-import com.hypixel.hytale.server.core.entity.entities.Player;
-import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHandler;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.SimpleInstantInteraction;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-
-import static org.phyrian.displays.SimpleItemDisplaysPlugin.LOGGER;
 
 public class RemoveDisplayedItemInteraction extends SimpleInstantInteraction {
 
@@ -72,30 +67,15 @@ public class RemoveDisplayedItemInteraction extends SimpleInstantInteraction {
     Ref<EntityStore> ref = context.getEntity();
     if (blockType == null || itemDisplay == null || !isEntityAttached(targetRef, itemDisplay)) {
       commandBuffer.run((store) -> {
-        ItemStack itemStack = displayComponent.getItemStack();
-        if (itemStack != null && !ItemStack.isEmpty(itemStack)) {
-          Vector3d itemPosition = pos.toVector3d().add(0.5, 0.5, 0.5);
-
-          Player playerComponent = store.getComponent(ref, Player.getComponentType());
-          if (playerComponent != null) {
-            itemStack = ItemUtils.pickupItem(playerComponent, itemStack, itemPosition, store, ref);
-          }
-
-          if (!ItemStack.isEmpty(itemStack)) {
-            ItemUtils.spawnItem(store, itemStack, itemPosition);
-          }
-        }
-
+        displayComponent.dropItem(store, ref);
         store.removeEntity(targetRef, RemoveReason.REMOVE);
         if (itemDisplay != null) {
-          LOGGER.atWarning().log("Huh, that's weird...");
           itemDisplay.updateState(commandBuffer, ref, pos, chunk, blockType, rotationIndex);
         }
       });
-      return;
+    } else {
+      itemDisplay.removeItem(commandBuffer, ref, pos, chunk, blockType, rotationIndex);
     }
-
-    itemDisplay.removeItem(commandBuffer, ref, pos, chunk, blockType, rotationIndex);
   }
 
   private static boolean isEntityAttached(Ref<EntityStore> ref, ItemDisplayBlock itemDisplay) {

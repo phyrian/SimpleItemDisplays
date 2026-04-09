@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.phyrian.displays.component.ItemDisplayBlock;
+
 import com.hypixel.hytale.component.Archetype;
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
@@ -14,7 +15,7 @@ import com.hypixel.hytale.component.system.EntityEventSystem;
 import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
-import com.hypixel.hytale.server.core.event.events.ecs.BreakBlockEvent;
+import com.hypixel.hytale.server.core.event.events.ecs.PlaceBlockEvent;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
@@ -22,15 +23,15 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import static org.phyrian.displays.SimpleItemDisplaysPlugin.LOGGER;
 
-public class BreakBlockEventSystem extends EntityEventSystem<EntityStore, BreakBlockEvent> {
+public class PlaceBlockEventSystem extends EntityEventSystem<EntityStore, PlaceBlockEvent> {
 
-  public BreakBlockEventSystem() {
-    super(BreakBlockEvent.class);
+  public PlaceBlockEventSystem() {
+    super(PlaceBlockEvent.class);
   }
 
   @Override
   public void handle(int i, @Nonnull ArchetypeChunk<EntityStore> archetypeChunk, @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer,
-      @Nonnull BreakBlockEvent event) {
+      @Nonnull PlaceBlockEvent event) {
     World world = store.getExternalData().getWorld();
     Vector3i pos = event.getTargetBlock();
 

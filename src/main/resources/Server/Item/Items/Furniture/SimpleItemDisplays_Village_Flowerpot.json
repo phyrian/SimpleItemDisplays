@@ -1,0 +1,102 @@
+{
+  "TranslationProperties": {
+    "Description": "items.SimpleItemDisplays_Desc_Customizable.description",
+    "Name": "items.SimpleItemDisplays_Village_Flowerpot.name"
+  },
+  "Icon": "Icons/ItemsGenerated/SimpleItemDisplays/Village_Flowerpot.png",
+  "Categories": [
+    "Furniture.Containers"
+  ],
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "CustomModel": "Blocks/SimpleItemDisplays/Village_Flowerpot.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Blocks/SimpleItemDisplays/Village_Flowerpot_Texture.png",
+        "Weight": 1
+      }
+    ],
+    "RandomRotation": "YawStep1",
+    "HitboxType": "SimpleItemDisplays_Flowerpot",
+    "Gathering": {
+      "Soft": {
+        "ItemId": "SimpleItemDisplays_Village_Flowerpot"
+      }
+    },
+    "BlockSoundSetId": "Clay_Pot_Small",
+    "BlockParticleSetId": "Clay",
+    "ParticleColor": "#864c36",
+    "Support": {
+      "Down": [
+        {
+          "FaceType": "Full"
+        }
+      ]
+    },
+    "BlockEntity": {
+      "Components": {
+        "SimpleItemDisplays_ItemDisplayBlock": {
+          "DisplayTransform": {
+            "Position": {
+              "X": 0.5,
+              "Y": 0.5,
+              "Z": 0.5
+            }
+          },
+          "AllowedBlockTypes": [
+            "SimpleItemDisplays_FlowerpotPlants"
+          ]
+        }
+      }
+    },
+    "InteractionHitboxType": "SimpleItemDisplays_Flowerpot",
+    "Interactions": {
+      "Use": "SimpleItemDisplays_Display_Item"
+    },
+    "State": {
+      "Definitions": {
+        "Full": {
+          "InteractionHint": "server.interactionHints.SimpleItemDisplays_removeItem",
+          "InteractionSoundEventId": "SFX_Grass_Build"
+        }
+      }
+    },
+    "InteractionHint": "server.interactionHints.SimpleItemDisplays_addItem",
+    "InteractionSoundEventId": "SFX_Leaves_Break"
+  },
+  "PlayerAnimationsId": "Block",
+  "Tags": {
+    "Type": [
+      "Furniture"
+    ],
+    "Family": [
+      "Village"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Blocks_Wood",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Soil_Clay",
+        "Quantity": 3
+      },
+      {
+        "ItemId": "Soil_Dirt",
+        "Quantity": 1
+      }
+    ],
+    "TimeSeconds": 0,
+    "BenchRequirement": [
+      {
+        "Id": "Furniture_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Furniture_Misc"
+        ]
+      }
+    ],
+    "OutputQuantity": 1
+  }
+}

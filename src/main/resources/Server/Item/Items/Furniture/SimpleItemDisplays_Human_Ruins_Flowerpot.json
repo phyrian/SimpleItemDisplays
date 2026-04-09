@@ -1,8 +1,9 @@
 {
   "TranslationProperties": {
-    "Name": "items.SimpleItemDisplays_Feran_Flowerpot.name"
+    "Description": "items.SimpleItemDisplays_Desc_Customizable.description",
+    "Name": "items.SimpleItemDisplays_Human_Ruins_Flowerpot.name"
   },
-  "Icon": "Icons/ItemsGenerated/SimpleItemDisplays/Feran_Flowerpot.png",
+  "Icon": "Icons/ItemsGenerated/SimpleItemDisplays/Human_Ruins_Flowerpot.png",
   "Categories": [
     "Furniture.Containers"
   ],
@@ -10,10 +11,10 @@
     "Material": "Solid",
     "DrawType": "Model",
     "Opacity": "Transparent",
-    "CustomModel": "Blocks/SimpleItemDisplays/Feran_Flowerpot.blockymodel",
+    "CustomModel": "Blocks/SimpleItemDisplays/Human_Ruins_Flowerpot.blockymodel",
     "CustomModelTexture": [
       {
-        "Texture": "Blocks/SimpleItemDisplays/Feran_Flowerpot_Texture.png",
+        "Texture": "Blocks/SimpleItemDisplays/Human_Ruins_Flowerpot_Texture.png",
         "Weight": 1
       }
     ],
@@ -21,12 +22,12 @@
     "HitboxType": "SimpleItemDisplays_Flowerpot",
     "Gathering": {
       "Soft": {
-        "ItemId": "SimpleItemDisplays_Feran_Flowerpot"
+        "ItemId": "SimpleItemDisplays_Human_Ruins_Flowerpot"
       }
     },
     "BlockSoundSetId": "Clay_Pot_Small",
     "BlockParticleSetId": "Clay",
-    "ParticleColor": "#f4d8b6",
+    "ParticleColor": "#89602e",
     "Support": {
       "Down": [
         {
@@ -38,9 +39,11 @@
       "Components": {
         "SimpleItemDisplays_ItemDisplayBlock": {
           "DisplayTransform": {
-            "X": 0,
-            "Y": 0.25,
-            "Z": 0
+            "Position": {
+              "X": 0.5,
+              "Y": 0.5,
+              "Z": 0.5
+            }
           },
           "AllowedBlockTypes": [
             "SimpleItemDisplays_FlowerpotPlants"
@@ -64,14 +67,6 @@
     "InteractionSoundEventId": "SFX_Leaves_Break"
   },
   "PlayerAnimationsId": "Block",
-  "ResourceTypes": [
-    {
-      "Id": "Fuel"
-    },
-    {
-      "Id": "Charcoal"
-    }
-  ],
   "Tags": {
     "Type": [
       "Furniture"
@@ -80,28 +75,5 @@
       "Human"
     ]
   },
-  "ItemSoundSetId": "ISS_Blocks_Wood",
-  "Recipe": {
-    "Input": [
-      {
-        "ItemId": "Soil_Clay",
-        "Quantity": 3
-      },
-      {
-        "ItemId": "Soil_Dirt",
-        "Quantity": 1
-      }
-    ],
-    "TimeSeconds": 0,
-    "BenchRequirement": [
-      {
-        "Id": "Furniture_Bench",
-        "Type": "Crafting",
-        "Categories": [
-          "Furniture_Misc"
-        ]
-      }
-    ],
-    "OutputQuantity": 1
-  }
+  "ItemSoundSetId": "ISS_Blocks_Wood"
 }
