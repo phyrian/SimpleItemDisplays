@@ -44,7 +44,16 @@
     },
     "InteractionHitboxType": "SimpleItemDisplays_Item_Frame",
     "Interactions": {
-      "Use": "SimpleItemDisplays_Display_Item"
+      "Use": {
+        "Interactions": [
+          {
+            "Type": "Condition",
+            "Crouching": false,
+            "Next": "SimpleItemDisplays_Display_Item",
+            "Failed": "SimpleItemDisplays_Remove_Item"
+          }
+        ]
+      }
     },
     "State": {
       "Definitions": {

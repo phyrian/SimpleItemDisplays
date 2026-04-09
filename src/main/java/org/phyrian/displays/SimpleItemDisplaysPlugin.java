@@ -9,6 +9,7 @@ import org.phyrian.displays.event.BreakBlockEventSystem;
 import org.phyrian.displays.event.PlaceBlockEventSystem;
 import org.phyrian.displays.interaction.DisplayItemInteraction;
 import org.phyrian.displays.interaction.RemoveDisplayedItemInteraction;
+import org.phyrian.displays.interaction.RemoveItemInteraction;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction;
@@ -36,6 +37,7 @@ public class SimpleItemDisplaysPlugin extends JavaPlugin {
     super.setup();
 
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_DisplayItem", DisplayItemInteraction.class, DisplayItemInteraction.CODEC);
+    this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_RemoveItem", RemoveItemInteraction.class, RemoveItemInteraction.CODEC);
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_RemoveDisplayedItem", RemoveDisplayedItemInteraction.class, RemoveDisplayedItemInteraction.CODEC);
     this.getEntityStoreRegistry().registerSystem(new BreakBlockEventSystem());
     this.getEntityStoreRegistry().registerSystem(new PlaceBlockEventSystem());
