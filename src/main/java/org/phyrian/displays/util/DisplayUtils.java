@@ -16,7 +16,6 @@ import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.RotationTuple;
 import com.hypixel.hytale.server.core.asset.type.item.config.Item;
-import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model.ModelReference;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.entity.entities.BlockEntity;
@@ -45,10 +44,10 @@ public class DisplayUtils {
 
   // I've wasted too many hours on this, and it currently does work for most blocks.
   public static DisplayTransform getDisplayTransform(Vector3i pos, Item item, int rotationIndex, DisplayOrientation orientation, float scale) {
-    RotationTuple rotationTuple = RotationTuple.get(rotationIndex);
+    var rotationTuple = RotationTuple.get(rotationIndex);
 
-    Vector3d displayPosition = new Vector3d(pos.x, pos.y, pos.z);
-    Vector3f displayRotation = new Vector3d(
+    var displayPosition = new Vector3d(pos.x, pos.y, pos.z);
+    var displayRotation = new Vector3d(
         rotationTuple.pitch().getRadians(),
         rotationTuple.yaw().getRadians(),
         rotationTuple.roll().getRadians()
@@ -66,7 +65,7 @@ public class DisplayUtils {
    * @param scale of the displayed entity
    */
   private static void centerDisplayedItem(Item item, RotationTuple rotationTuple, DisplayOrientation orientation, float scale, Vector3d outPosition, Vector3f outRotation) {
-    Box boundingBox = Objects.requireNonNullElse(ItemUtils.getItemBoundingBox(item), Box.UNIT);
+    var boundingBox = Objects.requireNonNullElse(ItemUtils.getItemBoundingBox(item), Box.UNIT);
 
     LOGGER.atFine().log("""
             Aligning item: %s
@@ -78,20 +77,20 @@ public class DisplayUtils {
         item.getId(), boundingBox.toString(), rotationTuple.toString(), orientation.toString(), outPosition.toString(), outRotation.toString());
 
     if (boundingBox.width() > 1.0) {
-      Vector3d dv = getHorizontalAlignment(boundingBox.min.x, boundingBox.max.x, scale);
+      var dv = getHorizontalAlignment(boundingBox.min.x, boundingBox.max.x, scale);
       outPosition.add(rotationTuple.rotatedVector(dv));
     }
 
-    boolean rotated = false;
+    var rotated = false;
     if (boundingBox.depth() > boundingBox.width()) {
-      Vector3d dv = getHorizontalAlignment(boundingBox.min.z, boundingBox.max.z, scale);
+      var dv = getHorizontalAlignment(boundingBox.min.z, boundingBox.max.z, scale);
       outPosition.add(rotationTuple.rotatedVector(dv.negate()));
       outRotation.addRotationOnAxis(Axis.Y, -90);
       rotated = true;
     }
 
     if (orientation == DisplayOrientation.VERTICAL) {
-      Vector3d dv = getVerticalAlignment(boundingBox.min.y, boundingBox.max.y, scale);
+      var dv = getVerticalAlignment(boundingBox.min.y, boundingBox.max.y, scale);
       outPosition.add(rotationTuple.rotatedVector(dv));
       if (rotationTuple.index() % 8 == 0) {
         if (rotated) {
@@ -116,8 +115,8 @@ public class DisplayUtils {
   }
 
   private static Vector3d getHorizontalAlignment(double min, double max, float scale) {
-    double length = max - min;
-    double d = (length / 2.0d) * (scale * 0.25d);
+    var length = max - min;
+    var d = (length / 2.0d) * (scale * 0.25d);
     return new Vector3d(d, 0, 0);
   }
 
@@ -128,21 +127,21 @@ public class DisplayUtils {
    * @return the correction vector
    */
   public static Vector3d getVerticalAlignment(double min, double max, float scale) {
-    double height = max - min;
-    double cy = -0.425d;
-    double cz = 0.5 - (scale * 0.25d); // scaled diff from center on Z
-    double dz = height > 1 ? (height / 2.0d) * (scale * 0.25d) : 0d;
+    var height = max - min;
+    var cy = -0.425d;
+    var cz = 0.5 - (scale * 0.25d); // scaled diff from center on Z
+    var dz = height > 1 ? (height / 2.0d) * (scale * 0.25d) : 0d;
     return new Vector3d(0, cy, -cz + dz);
   }
 
   public static Holder<EntityStore> createDisplayEntity(Store<EntityStore> store, ItemStack itemStack, DisplayTransform transform, DisplayKind displayKind) {
-    Holder<EntityStore> holder = EntityStore.REGISTRY.newHolder();
+    var holder = EntityStore.REGISTRY.newHolder();
     holder.addComponent(NetworkId.getComponentType(), new NetworkId(store.getExternalData().takeNextNetworkId()));
     holder.addComponent(TransformComponent.getComponentType(), new TransformComponent(transform.getPosition(), transform.getRotation()));
 
-    ItemStack displayStack = ItemUtils.copyItemStack(itemStack);
-    Item displayedItem = displayStack.getItem();
-    float displayScale = transform.getScale();
+    var displayStack = ItemUtils.copyItemStack(itemStack);
+    var displayedItem = displayStack.getItem();
+    var displayScale = transform.getScale();
     applyVisual(holder, displayedItem, displayScale, displayKind);
 
     displayStack.setOverrideDroppedItemAnimation(true);
@@ -153,7 +152,7 @@ public class DisplayUtils {
     holder.addComponent(HeadRotation.getComponentType(), new HeadRotation(transform.getRotation()));
     holder.addComponent(PropComponent.getComponentType(), PropComponent.get());
 
-    Interactions interactions = new Interactions();
+    var interactions = new Interactions();
     interactions.setInteractionId(InteractionType.Use, "SimpleItemDisplays_Remove_Displayed_Item");
     interactions.setInteractionHint("server.interactionHints.pickup");
     holder.addComponent(Interactions.getComponentType(), interactions);
@@ -165,7 +164,7 @@ public class DisplayUtils {
   }
 
   private static void applyVisual(Holder<EntityStore> holder, Item item, float scale, DisplayKind displayKind) {
-    Model model = ItemUtils.getItemModel(item);
+    var model = ItemUtils.getItemModel(item);
     if (displayKind == DisplayKind.MODEL && model == null) {
       LOGGER.atWarning().log("Tried applying model for item with no model definition: " + item.getId());
     }

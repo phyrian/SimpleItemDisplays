@@ -4,7 +4,6 @@ import org.phyrian.displays.util.ItemUtils;
 
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
-import com.hypixel.hytale.codec.builder.BuilderCodec.Builder;
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Ref;
@@ -70,7 +69,7 @@ public class DisplayedItemComponent implements Component<EntityStore> {
 
   public void dropItem(Store<EntityStore> store, Ref<EntityStore> ref) {
     if (itemStack != null && !ItemStack.isEmpty(itemStack)) {
-      Player playerComponent = store.getComponent(ref, Player.getComponentType());
+      var playerComponent = store.getComponent(ref, Player.getComponentType());
       if (playerComponent != null) {
         itemStack = ItemUtils.pickupItem(playerComponent, itemStack, dropPosition, store, ref);
       }
@@ -90,26 +89,22 @@ public class DisplayedItemComponent implements Component<EntityStore> {
   }
 
   static {
-    Builder<DisplayedItemComponent> builder = BuilderCodec.builder(DisplayedItemComponent.class,
-        DisplayedItemComponent::new);
-    builder
-        .append(new KeyedCodec("ItemStack", ItemStack.CODEC),
+    CODEC = BuilderCodec.builder(DisplayedItemComponent.class, DisplayedItemComponent::new)
+        .append(new KeyedCodec<>("ItemStack", ItemStack.CODEC),
             (component, itemStack) -> component.itemStack = itemStack,
             (component) -> component.itemStack
         )
-        .add();
-    builder
-        .append(new KeyedCodec("DisplayPosition", Vector3i.CODEC),
+        .add()
+        .append(new KeyedCodec<>("DisplayPosition", Vector3i.CODEC),
             (component, displayPosition) -> component.displayPosition = displayPosition,
             (component) -> component.displayPosition
         )
-        .add();
-    builder
-        .append(new KeyedCodec("DropPosition", Vector3d.CODEC),
+        .add()
+        .append(new KeyedCodec<>("DropPosition", Vector3d.CODEC),
             (component, dropPosition) -> component.dropPosition = dropPosition,
             (component) -> component.dropPosition
         )
-        .add();
-    CODEC = builder.build();
+        .add()
+        .build();
   }
 }

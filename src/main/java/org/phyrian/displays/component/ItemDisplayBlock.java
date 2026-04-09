@@ -1,9 +1,7 @@
 package org.phyrian.displays.component;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -18,16 +16,13 @@ import org.phyrian.displays.util.DisplayUtils;
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
-import com.hypixel.hytale.codec.builder.BuilderCodec.Builder;
 import com.hypixel.hytale.common.util.StringUtil;
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
-import com.hypixel.hytale.component.Holder;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
-import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.buildertool.config.BlockTypeListAsset;
@@ -36,7 +31,6 @@ import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.World;
-import com.hypixel.hytale.server.core.universe.world.chunk.EntityChunk;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -145,17 +139,17 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
 
   public void addItem(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref, Vector3i pos, ItemStack itemStack, WorldChunk chunk, BlockType blockType,
       int rotationIndex) {
-    String itemId = itemStack.getItemId();
-    Item item = Item.getAssetMap().getAsset(itemId);
+    var itemId = itemStack.getItemId();
+    var item = Item.getAssetMap().getAsset(itemId);
     if (item == null) {
       return;
     }
 
-    DisplayTransform transform = this.computeTransform(pos, item, rotationIndex);
+    var transform = this.computeTransform(pos, item, rotationIndex);
 
     commandBuffer.run((store) -> {
-      Holder<EntityStore> holder = DisplayUtils.createDisplayEntity(store, itemStack, transform, displayKind);
-      UUID uuid = UUID.randomUUID();
+      var holder = DisplayUtils.createDisplayEntity(store, itemStack, transform, displayKind);
+      var uuid = UUID.randomUUID();
       holder.putComponent(UUIDComponent.getComponentType(), new UUIDComponent(uuid));
       holder.putComponent(DisplayedItemComponent.getComponentType(), new DisplayedItemComponent(itemStack, pos, transform.getPosition()));
       store.addEntity(holder, AddReason.SPAWN);
@@ -171,18 +165,18 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
       var currentState = blockType.getStateForBlock(blockType);
       if (Objects.equals(currentState, FULL_STATE)) {
         // lookup displayed entity by display position
-        Store<EntityStore> entityStore = ref.getStore();
-        EntityChunk entityChunk = chunk.getEntityChunk();
+        var entityStore = ref.getStore();
+        var entityChunk = chunk.getEntityChunk();
         if (entityChunk != null) {
-          Set<Ref<EntityStore>> entityReferences = entityChunk.getEntityReferences();
-          ComponentType<EntityStore, DisplayedItemComponent> componentType = DisplayedItemComponent.getComponentType();
-          Optional<Pair<Ref<EntityStore>, DisplayedItemComponent>> optFoundEntity = entityReferences.stream()
+          var entityReferences = entityChunk.getEntityReferences();
+          var componentType = DisplayedItemComponent.getComponentType();
+          var optFoundEntity = entityReferences.stream()
               .map(entityRef -> Pair.of(entityRef, entityStore.getComponent(entityRef, componentType)))
               .filter(pair -> pair.value() != null)
               .filter(pair -> Objects.equals(pair.value().getDisplayPosition(), pos))
               .findFirst();
           if (optFoundEntity.isPresent()) {
-            Pair<Ref<EntityStore>, DisplayedItemComponent> foundEntity = optFoundEntity.get();
+            var foundEntity = optFoundEntity.get();
             commandBuffer.run((store) -> {
               foundEntity.value().dropItem(store, ref);
               store.removeEntity(foundEntity.key(), RemoveReason.REMOVE);
@@ -197,7 +191,7 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
       return;
     }
 
-    Ref<EntityStore> anchoredEntity = chunk.getWorld().getEntityStore().getRefFromUUID(this.anchoredEntityId);
+    var anchoredEntity = chunk.getWorld().getEntityStore().getRefFromUUID(this.anchoredEntityId);
     if (anchoredEntity == null) {
       this.setAnchoredEntityId(null);
       this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, DEFAULT_STATE);
@@ -205,7 +199,7 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
     }
 
     commandBuffer.run((store) -> {
-      DisplayedItemComponent displayComponent = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
+      var displayComponent = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
       if (displayComponent != null) {
         displayComponent.dropItem(store, ref);
       }
@@ -220,7 +214,7 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
     if (this.anchoredEntityId == null) {
       this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, DEFAULT_STATE);
     } else {
-      Ref<EntityStore> anchoredEntity = chunk.getWorld().getEntityStore().getRefFromUUID(this.anchoredEntityId);
+      var anchoredEntity = chunk.getWorld().getEntityStore().getRefFromUUID(this.anchoredEntityId);
       if (anchoredEntity == null) {
         this.setAnchoredEntityId(null);
         this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, DEFAULT_STATE);
@@ -232,10 +226,10 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
 
   public void onDestroy(CommandBuffer<EntityStore> commandBuffer, World world) {
     if (this.anchoredEntityId != null) {
-      Ref<EntityStore> anchoredEntity = world.getEntityStore().getRefFromUUID(this.anchoredEntityId);
+      var anchoredEntity = world.getEntityStore().getRefFromUUID(this.anchoredEntityId);
       if (anchoredEntity != null) {
         commandBuffer.run((store) -> {
-          DisplayedItemComponent displayComponent = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
+          var displayComponent = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
           if (displayComponent != null) {
             displayComponent.dropItem(store);
           }
@@ -264,30 +258,30 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
       return;
     }
 
-    String newBlock = current.getBlockKeyForState(newState);
+    var newBlock = current.getBlockKeyForState(newState);
     if (newBlock == null) {
       return;
     }
 
-    int newBlockId = BlockType.getAssetMap().getIndex(newBlock);
+    var newBlockId = BlockType.getAssetMap().getIndex(newBlock);
     if (newBlockId == Integer.MIN_VALUE) {
       return;
     }
 
-    BlockType newBlockType = BlockType.getAssetMap().getAsset(newBlockId);
-    int settings = 262;
+    var newBlockType = BlockType.getAssetMap().getAsset(newBlockId);
+    var settings = 262;
 
     if (chunk.getBlock(pos) != 0) {
       //noinspection DataFlowIssue
       chunk.setBlock(pos.getX(), pos.getY(), pos.getZ(), newBlockId, newBlockType, rotation, 0, settings);
     }
 
-    BlockType interactionStateBlock = current.getBlockForState(newState);
+    var interactionStateBlock = current.getBlockForState(newState);
     if (interactionStateBlock == null) {
       return;
     }
 
-    int soundEventIndex = interactionStateBlock.getInteractionSoundEventIndex();
+    var soundEventIndex = interactionStateBlock.getInteractionSoundEventIndex();
     if (soundEventIndex == 0) {
       return;
     }
@@ -298,10 +292,10 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
   private void loadItemFilter() {
     itemFilter = new HashSet<>();
 
-    Map<String, Item> items = Item.getAssetMap().getAssetMap();
+    var items = Item.getAssetMap().getAssetMap();
     if (allowedItems != null && !allowedItems.isEmpty()) {
       allowedItems.forEach(glob -> {
-        String globLower = glob.toLowerCase();
+        var globLower = glob.toLowerCase();
         items.keySet().forEach(id -> {
           if (StringUtil.isGlobMatching(globLower, id.toLowerCase())) {
             itemFilter.add(id);
@@ -312,7 +306,7 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
 
     if (allowedBlockTypes != null) {
       allowedBlockTypes.forEach(id -> {
-        BlockTypeListAsset blockTypeList = BlockTypeListAsset.getAssetMap().getAsset(id);
+        var blockTypeList = BlockTypeListAsset.getAssetMap().getAsset(id);
         if (blockTypeList != null) {
           itemFilter.addAll(blockTypeList.getBlockTypeKeys());
         }
@@ -322,8 +316,8 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
 
   private DisplayTransform computeTransform(Vector3i pos, Item item, int rotationIndex) {
     if (displayTransform != null) {
-      float scale = displayTransform.getScale();
-      DisplayTransform newTransform = DisplayUtils.getDisplayTransform(pos, item, rotationIndex, displayOrientation, scale);
+      var scale = displayTransform.getScale();
+      var newTransform = DisplayUtils.getDisplayTransform(pos, item, rotationIndex, displayOrientation, scale);
       return displayTransform.clone().add(newTransform);
     }
 
@@ -339,40 +333,33 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
   }
 
   static {
-    Builder<ItemDisplayBlock> builder = BuilderCodec.builder(ItemDisplayBlock.class,
-        ItemDisplayBlock::new);
-    builder
+    CODEC = BuilderCodec.builder(ItemDisplayBlock.class, ItemDisplayBlock::new)
         .append(new KeyedCodec<>("AnchoredEntity", Codec.UUID_BINARY),
             (component, anchoredEntity) -> component.anchoredEntityId = anchoredEntity,
             (component) -> component.anchoredEntityId)
-        .add();
-    builder
+        .add()
         .append(new KeyedCodec<>("DisplayTransform", DisplayTransform.CODEC),
             (component, displayTransform) -> component.displayTransform = Objects.requireNonNullElseGet(displayTransform, DisplayTransform::new),
             (component) -> component.displayTransform)
-        .add();
-    builder
+        .add()
         .append(new KeyedCodec<>("DisplayKind", DisplayKind.CODEC),
             (component, displayKind) -> component.displayKind = Objects.requireNonNullElse(displayKind, DisplayKind.DEFAULT),
             (component) -> component.displayKind)
-        .add();
-    builder
+        .add()
         .append(new KeyedCodec<>("DisplayOrientation", DisplayOrientation.CODEC),
             (component, displayOrientation) -> component.displayOrientation = Objects.requireNonNullElse(displayOrientation, DisplayOrientation.HORIZONTAL),
             (component) -> component.displayOrientation)
-        .add();
-    builder
+        .add()
         .append(new KeyedCodec<>("AllowedItems", Codec.STRING_ARRAY),
             (component, allowedItems) -> component.allowedItems = allowedItems != null ? Set.of(allowedItems) : null,
             (component) -> component.allowedItems != null ? component.allowedItems.toArray(String[]::new) : null)
-        .add();
-    builder
+        .add()
         .append(new KeyedCodec<>("AllowedBlockTypes", Codec.STRING_ARRAY),
             (component, allowedBlockTypes) -> component.allowedBlockTypes = allowedBlockTypes != null ? Set.of(allowedBlockTypes) : null,
             (component) -> component.allowedBlockTypes != null ? component.allowedBlockTypes.toArray(String[]::new) : null)
         .addValidator(BlockTypeListAsset.VALIDATOR_CACHE.getArrayValidator().late())
-        .add();
-    CODEC = builder.build();
+        .add()
+        .build();
   }
 
 }

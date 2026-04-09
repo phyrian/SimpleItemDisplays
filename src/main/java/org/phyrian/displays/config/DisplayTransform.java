@@ -7,7 +7,6 @@ import javax.annotation.Nonnull;
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
-import com.hypixel.hytale.codec.builder.BuilderCodec.Builder;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.math.vector.Vector3i;
@@ -107,25 +106,21 @@ public class DisplayTransform {
   }
 
   static {
-    Builder<DisplayTransform> builder = BuilderCodec.builder(DisplayTransform.class,
-        DisplayTransform::new);
-    builder
+    CODEC = BuilderCodec.builder(DisplayTransform.class, DisplayTransform::new)
         .append(new KeyedCodec<>("Position", Vector3d.CODEC),
             (component, position) -> component.position = Objects.requireNonNullElseGet(position, Vector3d::new),
             (component) -> component.position)
-        .add();
-    builder
+        .add()
         .append(new KeyedCodec<>("Rotation", Vector3i.CODEC),
             (component, rotation) -> component.rotation = rotation != null
                 ? rotation.toVector3f().scale((float) Math.toRadians(1))
                 : new Vector3f(),
             (component) -> component.rotation.scale((float) Math.toDegrees(1)).toVector3d().toVector3i())
-        .add();
-    builder
+        .add()
         .append(new KeyedCodec<>("Scale", Codec.FLOAT),
             (component, scale) -> component.scale = Objects.requireNonNullElse(scale, DEFAULT_SCALE),
             (component) -> component.scale)
-        .add();
-    CODEC = builder.build();
+        .add()
+        .build();
   }
 }
