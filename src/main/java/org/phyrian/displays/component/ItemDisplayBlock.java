@@ -3,6 +3,7 @@ package org.phyrian.displays.component;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -26,6 +27,7 @@ import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Holder;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
+import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.buildertool.config.BlockTypeListAsset;
@@ -34,9 +36,12 @@ import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.World;
+import com.hypixel.hytale.server.core.universe.world.chunk.EntityChunk;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+
+import it.unimi.dsi.fastutil.Pair;
 
 public class ItemDisplayBlock implements Component<ChunkStore> {
 
@@ -154,8 +159,8 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
       holder.putComponent(UUIDComponent.getComponentType(), new UUIDComponent(uuid));
       holder.putComponent(DisplayedItemComponent.getComponentType(), new DisplayedItemComponent(itemStack, pos, transform.getPosition()));
       store.addEntity(holder, AddReason.SPAWN);
+
       this.setAnchoredEntityId(uuid);
-      chunk.getWorld().performBlockUpdate(pos.x, pos.y, pos.z);
       this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, FULL_STATE);
     });
   }
@@ -163,6 +168,31 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
   public void removeItem(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref, Vector3i pos, WorldChunk chunk, BlockType blockType,
       int rotationIndex) {
     if (this.anchoredEntityId == null) {
+      var currentState = blockType.getStateForBlock(blockType);
+      if (Objects.equals(currentState, FULL_STATE)) {
+        // lookup displayed entity by display position
+        Store<EntityStore> entityStore = ref.getStore();
+        EntityChunk entityChunk = chunk.getEntityChunk();
+        if (entityChunk != null) {
+          Set<Ref<EntityStore>> entityReferences = entityChunk.getEntityReferences();
+          ComponentType<EntityStore, DisplayedItemComponent> componentType = DisplayedItemComponent.getComponentType();
+          Optional<Pair<Ref<EntityStore>, DisplayedItemComponent>> optFoundEntity = entityReferences.stream()
+              .map(entityRef -> Pair.of(entityRef, entityStore.getComponent(entityRef, componentType)))
+              .filter(pair -> pair.value() != null)
+              .filter(pair -> Objects.equals(pair.value().getDisplayPosition(), pos))
+              .findFirst();
+          if (optFoundEntity.isPresent()) {
+            Pair<Ref<EntityStore>, DisplayedItemComponent> foundEntity = optFoundEntity.get();
+            commandBuffer.run((store) -> {
+              foundEntity.value().dropItem(store, ref);
+              store.removeEntity(foundEntity.key(), RemoveReason.REMOVE);
+            });
+            this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, DEFAULT_STATE);
+            return;
+          }
+        }
+      }
+
       this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, DEFAULT_STATE);
       return;
     }
@@ -248,6 +278,7 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
     int settings = 262;
 
     if (chunk.getBlock(pos) != 0) {
+      //noinspection DataFlowIssue
       chunk.setBlock(pos.getX(), pos.getY(), pos.getZ(), newBlockId, newBlockType, rotation, 0, settings);
     }
 
