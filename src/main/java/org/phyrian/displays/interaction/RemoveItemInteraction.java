@@ -20,9 +20,9 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import static org.phyrian.displays.SimpleItemDisplaysPlugin.LOGGER;
 
-public class DisplayItemInteraction extends SimpleBlockInteraction {
+public class RemoveItemInteraction extends SimpleBlockInteraction {
 
-  public static final BuilderCodec<DisplayItemInteraction> CODEC;
+  public static final BuilderCodec<RemoveItemInteraction> CODEC;
 
   @Override
   protected void interactWithBlock(@Nonnull World world, @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull InteractionType type, @Nonnull InteractionContext context,
@@ -54,41 +54,12 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
     var chunkStore = world.getChunkStore().getStore();
     var itemDisplay = chunkStore.getComponent(chunkRef, ItemDisplayBlock.getComponentType());
     if (itemDisplay == null) {
-      itemDisplay = new ItemDisplayBlock(blockItemDisplay);
-      chunkStore.addComponent(chunkRef, ItemDisplayBlock.getComponentType(), itemDisplay);
+      context.getState().state = InteractionState.Failed;
+      return;
     }
 
     var ref = context.getEntity();
-    if (itemDisplay.getAnchoredEntityId() != null) {
-      context.getState().state = InteractionState.Failed;
-      return;
-    }
-
-    if (itemInHand == null) {
-      context.getState().state = InteractionState.Failed;
-      return;
-    }
-
-    if (!itemDisplay.canHoldItem(itemInHand.getItemId())) {
-      context.getState().state = InteractionState.Failed;
-      return;
-    }
-
-    var itemStack = itemInHand.withQuantity(1);
-    if (itemStack == null) {
-      context.getState().state = InteractionState.Failed;
-      return;
-    }
-
-    if (context.getHeldItemContainer() != null) {
-      var transaction = context.getHeldItemContainer().removeItemStackFromSlot(context.getHeldItemSlot(), itemInHand, 1);
-      if (!transaction.succeeded()) {
-        context.getState().state = InteractionState.Failed;
-        return;
-      }
-    }
-
-    itemDisplay.addItem(commandBuffer, ref, pos, itemStack, chunk, blockType, rotationIndex);
+    itemDisplay.removeItem(commandBuffer, ref, pos, chunk, blockType, rotationIndex);
   }
 
   @Override
@@ -97,9 +68,9 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
   }
 
   static {
-    CODEC = BuilderCodec.builder(DisplayItemInteraction.class, DisplayItemInteraction::new,
+    CODEC = BuilderCodec.builder(RemoveItemInteraction.class, RemoveItemInteraction::new,
             SimpleBlockInteraction.CODEC)
-        .documentation("Adds an item to the target item display block.")
+        .documentation("Removes the displayed item from the target item display block.")
         .build();
   }
 }

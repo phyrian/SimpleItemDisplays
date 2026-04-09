@@ -8,13 +8,10 @@ import org.phyrian.displays.component.ItemDisplayBlock;
 import com.hypixel.hytale.component.Archetype;
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
-import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.EntityEventSystem;
 import com.hypixel.hytale.server.core.modules.block.BlockReplaceEvent;
-import com.hypixel.hytale.server.core.universe.world.World;
-import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 public class BlockReplaceEventSystem extends EntityEventSystem<EntityStore, BlockReplaceEvent> {
@@ -26,14 +23,14 @@ public class BlockReplaceEventSystem extends EntityEventSystem<EntityStore, Bloc
   @Override
   public void handle(int i, @Nonnull ArchetypeChunk<EntityStore> archetypeChunk, @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer,
       @Nonnull BlockReplaceEvent event) {
-    World world = store.getExternalData().getWorld();
-    Ref<ChunkStore> chunkRef = event.getChunkRef();
+    var world = store.getExternalData().getWorld();
+    var chunkRef = event.getChunkRef();
     if (chunkRef == null) {
       return;
     }
 
-    Store<ChunkStore> chunkStore = world.getChunkStore().getStore();
-    ItemDisplayBlock itemDisplay = chunkStore.getComponent(chunkRef, ItemDisplayBlock.getComponentType());
+    var chunkStore = world.getChunkStore().getStore();
+    var itemDisplay = chunkStore.getComponent(chunkRef, ItemDisplayBlock.getComponentType());
     if (itemDisplay != null) {
       itemDisplay.onDestroy(commandBuffer, world);
     }
