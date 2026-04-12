@@ -48,6 +48,24 @@ public class DisplayTransform {
   }
 
   @Nonnull
+  public DisplayTransform addPosition(@Nonnull Vector3d position) {
+    this.position.add(position);
+    return this;
+  }
+
+  @Nonnull
+  public DisplayTransform addRotation(@Nonnull Vector3f rotation) {
+    this.rotation.add(rotation);
+    return this;
+  }
+
+  @Nonnull
+  public DisplayTransform scale(float scale) {
+    this.scale *= scale;
+    return this;
+  }
+
+  @Nonnull
   public Vector3d getPosition() {
     return position;
   }

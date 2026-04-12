@@ -99,7 +99,7 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
     return displayKind;
   }
 
-  public void setDisplayOrientation(DisplayKind displayKind) {
+  public void setDisplayKind(DisplayKind displayKind) {
     this.displayKind = displayKind;
   }
 
@@ -145,13 +145,14 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
       return;
     }
 
-    var transform = this.computeTransform(pos, item, rotationIndex);
+    var variantRotation = blockType.getVariantRotation();
+    var blockTransform = DisplayUtils.getBlockTransform(pos, rotationIndex, variantRotation, displayTransform);
 
     commandBuffer.run((store) -> {
-      var holder = DisplayUtils.createDisplayEntity(store, itemStack, transform, displayKind);
+      var holder = DisplayUtils.createDisplayEntity(store, itemStack, rotationIndex, displayOrientation, blockTransform, displayKind);
       var uuid = UUID.randomUUID();
       holder.putComponent(UUIDComponent.getComponentType(), new UUIDComponent(uuid));
-      holder.putComponent(DisplayedItemComponent.getComponentType(), new DisplayedItemComponent(itemStack, pos, transform.getPosition()));
+      holder.putComponent(DisplayedItemComponent.getComponentType(), new DisplayedItemComponent(itemStack, pos, blockTransform.getPosition()));
       store.addEntity(holder, AddReason.SPAWN);
 
       this.setAnchoredEntityId(uuid);
@@ -312,16 +313,6 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
         }
       });
     }
-  }
-
-  private DisplayTransform computeTransform(Vector3i pos, Item item, int rotationIndex) {
-    if (displayTransform != null) {
-      var scale = displayTransform.getScale();
-      var newTransform = DisplayUtils.getDisplayTransform(pos, item, rotationIndex, displayOrientation, scale);
-      return displayTransform.clone().add(newTransform);
-    }
-
-    return DisplayUtils.getDisplayTransform(pos, item, rotationIndex, displayOrientation, 1.0F);
   }
 
   public static ComponentType<ChunkStore, ItemDisplayBlock> getComponentType() {
