@@ -147,7 +147,7 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
     }
 
     var variantRotation = blockType.getVariantRotation();
-    var blockTransform = DisplayUtils.getBlockTransform(pos, rotationIndex, variantRotation, displayTransform);
+    var blockTransform = DisplayUtils.getBlockTransform(pos, rotationIndex, variantRotation, displayOrientation, displayTransform);
 
     commandBuffer.run((store) -> {
       var holder = DisplayUtils.createDisplayEntity(store, itemStack, rotationIndex, displayOrientation, blockTransform, displayKind);
@@ -170,6 +170,10 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
       return;
     }
 
+    if (!anchoredEntity.isValid()) {
+      return;
+    }
+
     commandBuffer.run((store) -> {
       var displayComponent = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
       if (displayComponent != null) {
@@ -183,17 +187,20 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
   }
 
   public void updateState(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref, Vector3i pos, WorldChunk chunk, BlockType blockType, int rotationIndex) {
-    if (this.anchoredEntityId == null) {
+    var world = chunk.getWorld();
+
+    var anchoredEntity = getAnchoredEntity(world);
+    if (anchoredEntity == null) {
+      this.setAnchoredEntityId(null);
       this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, DEFAULT_STATE);
-    } else {
-      var anchoredEntity = chunk.getWorld().getEntityStore().getRefFromUUID(this.anchoredEntityId);
-      if (anchoredEntity == null) {
-        this.setAnchoredEntityId(null);
-        this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, DEFAULT_STATE);
-      } else {
-        this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, FULL_STATE);
-      }
+      return;
     }
+
+    if (!anchoredEntity.isValid()) {
+      return;
+    }
+
+    this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, FULL_STATE);
   }
 
   public void refreshDisplay(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref, Vector3i pos, WorldChunk chunk, BlockType blockType, int rotationIndex) {
@@ -204,8 +211,12 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
       return;
     }
 
+    if (!anchoredEntity.isValid()) {
+      return;
+    }
+
     var variantRotation = blockType.getVariantRotation();
-    var blockTransform = DisplayUtils.getBlockTransform(pos, rotationIndex, variantRotation, displayTransform);
+    var blockTransform = DisplayUtils.getBlockTransform(pos, rotationIndex, variantRotation, displayOrientation, displayTransform);
 
     commandBuffer.run((store) -> {
       var displayComponent = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
@@ -239,48 +250,65 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
   }
 
   public void onDestroy(CommandBuffer<EntityStore> commandBuffer, World world) {
-    if (this.anchoredEntityId != null) {
-      var anchoredEntity = world.getEntityStore().getRefFromUUID(this.anchoredEntityId);
-      if (anchoredEntity != null) {
-        commandBuffer.run((store) -> {
-          var displayComponent = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
-          if (displayComponent != null) {
-            displayComponent.dropItem(store);
-          }
-
-          store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
-          this.setAnchoredEntityId(null);
-        });
-      } else {
-        this.setAnchoredEntityId(null);
-      }
+    var anchoredEntity = getAnchoredEntity(world);
+    if (anchoredEntity == null) {
+      this.setAnchoredEntityId(null);
+      return;
     }
+
+    if (!anchoredEntity.isValid()) {
+      return;
+    }
+
+    commandBuffer.run((store) -> {
+      var displayComponent = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
+      if (displayComponent != null) {
+        displayComponent.dropItem(store);
+      }
+
+      store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
+      this.setAnchoredEntityId(null);
+    });
   }
 
   private Ref<EntityStore> findAnchoredEntity(Ref<EntityStore> ref, Vector3i pos, WorldChunk chunk, BlockType blockType) {
-    if (this.anchoredEntityId != null) {
-      return chunk.getWorld().getEntityStore().getRefFromUUID(this.anchoredEntityId);
-    } else {
-      var currentState = blockType.getStateForBlock(blockType);
-      if (Objects.equals(currentState, FULL_STATE)) {
-        // lookup displayed entity by display position
-        var entityStore = ref.getStore();
-        var entityChunk = chunk.getEntityChunk();
-        if (entityChunk != null) {
-          var entityReferences = entityChunk.getEntityReferences();
-          var componentType = DisplayedItemComponent.getComponentType();
-          var optFoundEntity = entityReferences.stream()
-              .map(entityRef -> Pair.of(entityRef, entityStore.getComponent(entityRef, componentType)))
-              .filter(pair -> pair.value() != null)
-              .filter(pair -> Objects.equals(pair.value().getDisplayPosition(), pos))
-              .findFirst();
-          if (optFoundEntity.isPresent()) {
-            return optFoundEntity.get().key();
-          }
-        }
+    var world = chunk.getWorld();
+
+    var anchoredEntity = getAnchoredEntity(world);
+    if (anchoredEntity != null) {
+      return anchoredEntity;
+    }
+
+    var currentState = blockType.getStateForBlock(blockType);
+    if (!Objects.equals(currentState, FULL_STATE)) {
+      return null;
+    }
+
+    // lookup displayed entity by display position
+    var entityStore = ref.getStore();
+    var entityChunk = chunk.getEntityChunk();
+    if (entityChunk != null) {
+      var entityReferences = entityChunk.getEntityReferences();
+      var componentType = DisplayedItemComponent.getComponentType();
+      var optFoundEntity = entityReferences.stream()
+          .map(entityRef -> Pair.of(entityRef, entityStore.getComponent(entityRef, componentType)))
+          .filter(pair -> pair.value() != null)
+          .filter(pair -> Objects.equals(pair.value().getDisplayPosition(), pos))
+          .findFirst();
+      if (optFoundEntity.isPresent()) {
+        return optFoundEntity.get().key();
       }
     }
+
     return null;
+  }
+
+  private Ref<EntityStore> getAnchoredEntity(World world) {
+    if (this.anchoredEntityId == null) {
+      return null;
+    }
+
+    return world.getEntityStore().getRefFromUUID(this.anchoredEntityId);
   }
 
   private void changeState(@Nonnull CommandBuffer<EntityStore> commandBuffer, @Nullable Ref<EntityStore> ref, @Nonnull Vector3i pos, @Nonnull WorldChunk chunk,
