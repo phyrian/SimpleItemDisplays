@@ -123,26 +123,26 @@ public class DisplayUtils {
   }
 
   private static DisplayTransform applyVisual(Holder<EntityStore> holder, Item item, int rotationIndex, DisplayOrientation orientation, float scale, DisplayKind displayKind) {
-    if (displayKind != DisplayKind.BLOCK && displayKind != DisplayKind.ITEM) {
+    if (displayKind != DisplayKind.Block && displayKind != DisplayKind.Item) {
       var modelAsset = ItemUtils.getItemModel(item);
       if (modelAsset != null) {
         holder.addComponent(ModelComponent.getComponentType(), new ModelComponent(Model.createScaledModel(modelAsset, scale)));
         holder.addComponent(PersistentModel.getComponentType(), new PersistentModel(new ModelReference(modelAsset.getId(), scale, null, true)));
         return centerDisplayedBlock(item, rotationIndex, orientation, scale);
       }
-      if (displayKind == DisplayKind.MODEL) {
+      if (displayKind == DisplayKind.Model) {
         LOGGER.atWarning().log("Tried applying model display for item with no registered ModelAsset: " + item.getId());
       }
     }
 
     // not supported
     holder.addComponent(EntityScaleComponent.getComponentType(), new EntityScaleComponent(scale));
-    if (displayKind != DisplayKind.ITEM) {
+    if (displayKind != DisplayKind.Item) {
       if (item.hasBlockType()) {
         holder.addComponent(BlockEntity.getComponentType(), new BlockEntity(item.getId()));
         return centerDisplayedBlock(item, rotationIndex, orientation, scale);
       }
-      if (displayKind == DisplayKind.BLOCK) {
+      if (displayKind == DisplayKind.Block) {
         LOGGER.atWarning().log("Tried applying block display for item with no blockType: " + item.getId());
       }
     }
@@ -182,7 +182,7 @@ public class DisplayUtils {
       rotated = true;
     }
 
-    if (orientation == DisplayOrientation.VERTICAL) {
+    if (orientation == DisplayOrientation.Vertical) {
       var dz = getVerticalAlignment(hitbox.height(), scale);
       translation.add(rotationTuple.rotatedVector(new Vector3d(0, -0.5, dz)));
       if (rotationIndex % 8 == 0) {
@@ -227,7 +227,7 @@ public class DisplayUtils {
              - scale: %s""",
         item.getId(), rotationTuple.toString(), orientation.toString(), (double) scale + "");
 
-    if (orientation == DisplayOrientation.VERTICAL) {
+    if (orientation == DisplayOrientation.Vertical) {
       if ("Block".equals(playerAnimationsId)) {
         // items held as blocks: mostly armor pieces
         rotation.addRotationOnAxis(Axis.Y, 180);

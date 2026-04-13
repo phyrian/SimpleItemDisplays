@@ -16,6 +16,7 @@ import org.phyrian.displays.util.DisplayUtils;
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
+import com.hypixel.hytale.codec.codecs.EnumCodec;
 import com.hypixel.hytale.common.util.StringUtil;
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.CommandBuffer;
@@ -54,7 +55,7 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
   private Set<String> itemFilter;
 
   public ItemDisplayBlock() {
-    this(null, new DisplayTransform(), DisplayOrientation.HORIZONTAL, DisplayKind.DEFAULT, null, null);
+    this(null, new DisplayTransform(), DisplayOrientation.Horizontal, DisplayKind.Default, null, null);
   }
 
   public ItemDisplayBlock(UUID attachedEntity, DisplayTransform displayTransform, DisplayOrientation displayOrientation, DisplayKind displayKind, Set<String> allowedItems, Set<String> allowedResourceTypes) {
@@ -371,12 +372,12 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
             (component, displayTransform) -> component.displayTransform = Objects.requireNonNullElseGet(displayTransform, DisplayTransform::new),
             (component) -> component.displayTransform)
         .add()
-        .append(new KeyedCodec<>("DisplayKind", DisplayKind.CODEC),
-            (component, displayKind) -> component.displayKind = Objects.requireNonNullElse(displayKind, DisplayKind.DEFAULT),
+        .append(new KeyedCodec<>("DisplayKind", new EnumCodec<>(DisplayKind.class)),
+            (component, displayKind) -> component.displayKind = Objects.requireNonNullElse(displayKind, DisplayKind.Default),
             (component) -> component.displayKind)
         .add()
-        .append(new KeyedCodec<>("DisplayOrientation", DisplayOrientation.CODEC),
-            (component, displayOrientation) -> component.displayOrientation = Objects.requireNonNullElse(displayOrientation, DisplayOrientation.HORIZONTAL),
+        .append(new KeyedCodec<>("DisplayOrientation", new EnumCodec<>(DisplayOrientation.class)),
+            (component, displayOrientation) -> component.displayOrientation = Objects.requireNonNullElse(displayOrientation, DisplayOrientation.Horizontal),
             (component) -> component.displayOrientation)
         .add()
         .append(new KeyedCodec<>("AllowedItems", Codec.STRING_ARRAY),

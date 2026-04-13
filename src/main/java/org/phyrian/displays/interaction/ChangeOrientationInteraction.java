@@ -60,7 +60,7 @@ public class ChangeOrientationInteraction extends SimpleBlockInteraction {
     }
 
     var currentOrientation = itemDisplay.getDisplayOrientation();
-    var newOrientation = (currentOrientation == null || currentOrientation == DisplayOrientation.HORIZONTAL) ? DisplayOrientation.VERTICAL : DisplayOrientation.HORIZONTAL;
+    var newOrientation = (currentOrientation == null || currentOrientation == DisplayOrientation.Horizontal) ? DisplayOrientation.Vertical : DisplayOrientation.Horizontal;
     itemDisplay.setDisplayOrientation(newOrientation);
     itemDisplay.refreshDisplay(commandBuffer, context.getEntity(), pos, chunk, blockType, rotationIndex);
   }
