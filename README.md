@@ -1,2 +1,2 @@
-# hytale-plugins.SimpleItemDisplays
-Official SimpleItemDisplays Hytale plugin repository
+# Simple Item Displays
+Official repository for the Simple Item Displays Hytale plugin
