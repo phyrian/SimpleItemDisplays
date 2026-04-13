@@ -1,7 +1,7 @@
 {
     "Group": "org.phyrian",
     "Name": "SimpleItemDisplays",
-    "Version": "0.1.1",
+    "Version": "0.2.0",
     "Description": "Adds flowerpots, item frames and other display blocks to the game for immersive decorations!",
     "Authors": [
         {
