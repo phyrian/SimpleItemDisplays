@@ -46,7 +46,8 @@ public class DisplayUtils {
   }
 
   // I've wasted too many hours on this, and it currently does work for most blocks.
-  public static DisplayTransform getBlockTransform(Vector3i pos, int rotationIndex, VariantRotation variantRotation, DisplayTransform displayTransform) {
+  public static DisplayTransform getBlockTransform(Vector3i pos, int rotationIndex, VariantRotation variantRotation, DisplayOrientation displayOrientation,
+      DisplayTransform displayTransform) {
     var rotationTuple = RotationTuple.get(rotationIndex);
 
     var blockPosition = new Vector3d(pos.x, pos.y, pos.z);
@@ -59,7 +60,7 @@ public class DisplayUtils {
     var blockTransform = new DisplayTransform(blockPosition, blockRotation);
     if (displayTransform != null) {
       var displayPosition = displayTransform.getPosition().clone();
-      if (variantRotation == VariantRotation.DoublePipe) {
+      if (variantRotation == VariantRotation.DoublePipe && displayOrientation == DisplayOrientation.Vertical) {
         rotationTuple.applyRotationTo(displayPosition);
         if (rotationIndex == RotationTuple.index(Rotation.None, Rotation.Ninety, Rotation.None)) {
           displayPosition.y += 0.5;
@@ -182,6 +183,7 @@ public class DisplayUtils {
       rotated = true;
     }
 
+    // TODO: the non-vertical orientation needs adjustments for multi-blocks
     if (orientation == DisplayOrientation.Vertical) {
       var dz = getVerticalAlignment(hitbox.height(), scale);
       translation.add(rotationTuple.rotatedVector(new Vector3d(0, -0.5, dz)));
