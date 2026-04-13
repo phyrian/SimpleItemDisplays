@@ -7,6 +7,8 @@ import org.phyrian.displays.component.ItemDisplayBlock;
 import org.phyrian.displays.event.BlockReplaceEventSystem;
 import org.phyrian.displays.event.BreakBlockEventSystem;
 import org.phyrian.displays.event.PlaceBlockEventSystem;
+import org.phyrian.displays.interaction.ChangeOrientationInteraction;
+import org.phyrian.displays.interaction.ChangeScaleInteraction;
 import org.phyrian.displays.interaction.DisplayItemInteraction;
 import org.phyrian.displays.interaction.RemoveDisplayedItemInteraction;
 import org.phyrian.displays.interaction.RemoveItemInteraction;
@@ -36,6 +38,8 @@ public class SimpleItemDisplaysPlugin extends JavaPlugin {
     LOGGER.atInfo().log("Setting up SimpleItemDisplays...");
     super.setup();
 
+    this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_ChangeOrientation", ChangeOrientationInteraction.class, ChangeOrientationInteraction.CODEC);
+    this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_ChangeScale", ChangeScaleInteraction.class, ChangeScaleInteraction.CODEC);
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_DisplayItem", DisplayItemInteraction.class, DisplayItemInteraction.CODEC);
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_RemoveItem", RemoveItemInteraction.class, RemoveItemInteraction.CODEC);
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_RemoveDisplayedItem", RemoveDisplayedItemInteraction.class, RemoveDisplayedItemInteraction.CODEC);

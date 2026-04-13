@@ -1,5 +1,8 @@
 package org.phyrian.displays.util;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -13,7 +16,6 @@ import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.asset.type.blockhitbox.BlockBoundingBoxes;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.item.config.Item;
-import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.asset.type.model.config.ModelAsset;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
@@ -58,27 +60,22 @@ public class ItemUtils {
     }
   }
 
-  public static @Nullable Model getItemModel(@Nonnull Item item) {
+  public static @Nullable ModelAsset getItemModel(@Nonnull Item item) {
     var modelId = getItemModelId(item);
     if (modelId != null) {
-      var modelAsset = ModelAsset.getAssetMap().getAsset(modelId);
-      if (modelAsset != null) {
-        var iconProperties = item.getIconProperties();
-        return Model.createScaledModel(modelAsset, iconProperties != null ? iconProperties.getScale() : 1.0F);
-      }
+      return ModelAsset.getAssetMap().getAsset(modelId);
     }
 
     return null;
   }
 
-  public static Box getItemBoundingBox(Item item) {
+  public static Box getItemHitbox(Item item) {
     var modelId = getItemModelId(item);
     if (modelId != null) {
       var modelAsset = ModelAsset.getAssetMap().getAsset(modelId);
       if (modelAsset != null) {
         return modelAsset.getBoundingBox();
       }
-      // TODO: find a way to load item model
     }
 
     if (item.hasBlockType()) {
@@ -108,6 +105,13 @@ public class ItemUtils {
     }
 
     return null;
+  }
+
+  public static boolean isHandheld(Item item) {
+    return item.getTool() != null || item.getWeapon() != null || item.getBuilderTool() != null || Optional.ofNullable(item.getCategories())
+        .filter(categories -> Arrays.stream(categories)
+            .anyMatch(category -> "Items.Tools".equals(category) || "Items.Weapons".equals(category) || "Tool.BuilderTool".equals(category)))
+        .isPresent();
   }
 
   public static ItemStack copyItemStack(ItemStack itemStack) {

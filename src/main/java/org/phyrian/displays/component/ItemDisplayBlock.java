@@ -16,6 +16,7 @@ import org.phyrian.displays.util.DisplayUtils;
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
+import com.hypixel.hytale.codec.codecs.EnumCodec;
 import com.hypixel.hytale.common.util.StringUtil;
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.CommandBuffer;
@@ -54,7 +55,7 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
   private Set<String> itemFilter;
 
   public ItemDisplayBlock() {
-    this(null, new DisplayTransform(), DisplayOrientation.HORIZONTAL, DisplayKind.DEFAULT, null, null);
+    this(null, new DisplayTransform(), DisplayOrientation.Horizontal, DisplayKind.Default, null, null);
   }
 
   public ItemDisplayBlock(UUID attachedEntity, DisplayTransform displayTransform, DisplayOrientation displayOrientation, DisplayKind displayKind, Set<String> allowedItems, Set<String> allowedResourceTypes) {
@@ -99,7 +100,7 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
     return displayKind;
   }
 
-  public void setDisplayOrientation(DisplayKind displayKind) {
+  public void setDisplayKind(DisplayKind displayKind) {
     this.displayKind = displayKind;
   }
 
@@ -145,13 +146,14 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
       return;
     }
 
-    var transform = this.computeTransform(pos, item, rotationIndex);
+    var variantRotation = blockType.getVariantRotation();
+    var blockTransform = DisplayUtils.getBlockTransform(pos, rotationIndex, variantRotation, displayOrientation, displayTransform);
 
     commandBuffer.run((store) -> {
-      var holder = DisplayUtils.createDisplayEntity(store, itemStack, transform, displayKind);
+      var holder = DisplayUtils.createDisplayEntity(store, itemStack, rotationIndex, displayOrientation, blockTransform, displayKind);
       var uuid = UUID.randomUUID();
       holder.putComponent(UUIDComponent.getComponentType(), new UUIDComponent(uuid));
-      holder.putComponent(DisplayedItemComponent.getComponentType(), new DisplayedItemComponent(itemStack, pos, transform.getPosition()));
+      holder.putComponent(DisplayedItemComponent.getComponentType(), new DisplayedItemComponent(itemStack, pos, blockTransform.getPosition()));
       store.addEntity(holder, AddReason.SPAWN);
 
       this.setAnchoredEntityId(uuid);
@@ -161,40 +163,14 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
 
   public void removeItem(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref, Vector3i pos, WorldChunk chunk, BlockType blockType,
       int rotationIndex) {
-    if (this.anchoredEntityId == null) {
-      var currentState = blockType.getStateForBlock(blockType);
-      if (Objects.equals(currentState, FULL_STATE)) {
-        // lookup displayed entity by display position
-        var entityStore = ref.getStore();
-        var entityChunk = chunk.getEntityChunk();
-        if (entityChunk != null) {
-          var entityReferences = entityChunk.getEntityReferences();
-          var componentType = DisplayedItemComponent.getComponentType();
-          var optFoundEntity = entityReferences.stream()
-              .map(entityRef -> Pair.of(entityRef, entityStore.getComponent(entityRef, componentType)))
-              .filter(pair -> pair.value() != null)
-              .filter(pair -> Objects.equals(pair.value().getDisplayPosition(), pos))
-              .findFirst();
-          if (optFoundEntity.isPresent()) {
-            var foundEntity = optFoundEntity.get();
-            commandBuffer.run((store) -> {
-              foundEntity.value().dropItem(store, ref);
-              store.removeEntity(foundEntity.key(), RemoveReason.REMOVE);
-            });
-            this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, DEFAULT_STATE);
-            return;
-          }
-        }
-      }
-
+    var anchoredEntity = findAnchoredEntity(ref, pos, chunk, blockType);
+    if (anchoredEntity == null) {
+      this.setAnchoredEntityId(null);
       this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, DEFAULT_STATE);
       return;
     }
 
-    var anchoredEntity = chunk.getWorld().getEntityStore().getRefFromUUID(this.anchoredEntityId);
-    if (anchoredEntity == null) {
-      this.setAnchoredEntityId(null);
-      this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, DEFAULT_STATE);
+    if (!anchoredEntity.isValid()) {
       return;
     }
 
@@ -211,36 +187,128 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
   }
 
   public void updateState(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref, Vector3i pos, WorldChunk chunk, BlockType blockType, int rotationIndex) {
-    if (this.anchoredEntityId == null) {
+    var world = chunk.getWorld();
+
+    var anchoredEntity = getAnchoredEntity(world);
+    if (anchoredEntity == null) {
+      this.setAnchoredEntityId(null);
       this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, DEFAULT_STATE);
-    } else {
-      var anchoredEntity = chunk.getWorld().getEntityStore().getRefFromUUID(this.anchoredEntityId);
-      if (anchoredEntity == null) {
+      return;
+    }
+
+    if (!anchoredEntity.isValid()) {
+      return;
+    }
+
+    this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, FULL_STATE);
+  }
+
+  public void refreshDisplay(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref, Vector3i pos, WorldChunk chunk, BlockType blockType, int rotationIndex) {
+    var anchoredEntity = findAnchoredEntity(ref, pos, chunk, blockType);
+    if (anchoredEntity == null) {
+      this.setAnchoredEntityId(null);
+      this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, DEFAULT_STATE);
+      return;
+    }
+
+    if (!anchoredEntity.isValid()) {
+      return;
+    }
+
+    var variantRotation = blockType.getVariantRotation();
+    var blockTransform = DisplayUtils.getBlockTransform(pos, rotationIndex, variantRotation, displayOrientation, displayTransform);
+
+    commandBuffer.run((store) -> {
+      var displayComponent = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
+      if (displayComponent == null) {
+        store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
         this.setAnchoredEntityId(null);
         this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, DEFAULT_STATE);
-      } else {
-        this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, FULL_STATE);
+        return;
       }
-    }
+
+      var itemStack = displayComponent.getItemStack();
+      // remove previous display entity after retrieving itemStack
+      store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
+      this.setAnchoredEntityId(null);
+
+      var itemId = itemStack.getItemId();
+      var item = Item.getAssetMap().getAsset(itemId);
+      if (item == null) {
+        this.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, DEFAULT_STATE);
+        return;
+      }
+
+      var holder = DisplayUtils.createDisplayEntity(store, itemStack, rotationIndex, displayOrientation, blockTransform, displayKind);
+      var uuid = UUID.randomUUID();
+      holder.putComponent(UUIDComponent.getComponentType(), new UUIDComponent(uuid));
+      holder.putComponent(DisplayedItemComponent.getComponentType(), new DisplayedItemComponent(itemStack, pos, blockTransform.getPosition()));
+      store.addEntity(holder, AddReason.SPAWN);
+
+      this.setAnchoredEntityId(uuid);
+    });
   }
 
   public void onDestroy(CommandBuffer<EntityStore> commandBuffer, World world) {
-    if (this.anchoredEntityId != null) {
-      var anchoredEntity = world.getEntityStore().getRefFromUUID(this.anchoredEntityId);
-      if (anchoredEntity != null) {
-        commandBuffer.run((store) -> {
-          var displayComponent = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
-          if (displayComponent != null) {
-            displayComponent.dropItem(store);
-          }
+    var anchoredEntity = getAnchoredEntity(world);
+    if (anchoredEntity == null) {
+      this.setAnchoredEntityId(null);
+      return;
+    }
 
-          store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
-          this.setAnchoredEntityId(null);
-        });
-      } else {
-        this.setAnchoredEntityId(null);
+    if (!anchoredEntity.isValid()) {
+      return;
+    }
+
+    commandBuffer.run((store) -> {
+      var displayComponent = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
+      if (displayComponent != null) {
+        displayComponent.dropItem(store);
+      }
+
+      store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
+      this.setAnchoredEntityId(null);
+    });
+  }
+
+  private Ref<EntityStore> findAnchoredEntity(Ref<EntityStore> ref, Vector3i pos, WorldChunk chunk, BlockType blockType) {
+    var world = chunk.getWorld();
+
+    var anchoredEntity = getAnchoredEntity(world);
+    if (anchoredEntity != null) {
+      return anchoredEntity;
+    }
+
+    var currentState = blockType.getStateForBlock(blockType);
+    if (!Objects.equals(currentState, FULL_STATE)) {
+      return null;
+    }
+
+    // lookup displayed entity by display position
+    var entityStore = ref.getStore();
+    var entityChunk = chunk.getEntityChunk();
+    if (entityChunk != null) {
+      var entityReferences = entityChunk.getEntityReferences();
+      var componentType = DisplayedItemComponent.getComponentType();
+      var optFoundEntity = entityReferences.stream()
+          .map(entityRef -> Pair.of(entityRef, entityStore.getComponent(entityRef, componentType)))
+          .filter(pair -> pair.value() != null)
+          .filter(pair -> Objects.equals(pair.value().getDisplayPosition(), pos))
+          .findFirst();
+      if (optFoundEntity.isPresent()) {
+        return optFoundEntity.get().key();
       }
     }
+
+    return null;
+  }
+
+  private Ref<EntityStore> getAnchoredEntity(World world) {
+    if (this.anchoredEntityId == null) {
+      return null;
+    }
+
+    return world.getEntityStore().getRefFromUUID(this.anchoredEntityId);
   }
 
   private void changeState(@Nonnull CommandBuffer<EntityStore> commandBuffer, @Nullable Ref<EntityStore> ref, @Nonnull Vector3i pos, @Nonnull WorldChunk chunk,
@@ -314,16 +382,6 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
     }
   }
 
-  private DisplayTransform computeTransform(Vector3i pos, Item item, int rotationIndex) {
-    if (displayTransform != null) {
-      var scale = displayTransform.getScale();
-      var newTransform = DisplayUtils.getDisplayTransform(pos, item, rotationIndex, displayOrientation, scale);
-      return displayTransform.clone().add(newTransform);
-    }
-
-    return DisplayUtils.getDisplayTransform(pos, item, rotationIndex, displayOrientation, 1.0F);
-  }
-
   public static ComponentType<ChunkStore, ItemDisplayBlock> getComponentType() {
     return TYPE;
   }
@@ -342,12 +400,12 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
             (component, displayTransform) -> component.displayTransform = Objects.requireNonNullElseGet(displayTransform, DisplayTransform::new),
             (component) -> component.displayTransform)
         .add()
-        .append(new KeyedCodec<>("DisplayKind", DisplayKind.CODEC),
-            (component, displayKind) -> component.displayKind = Objects.requireNonNullElse(displayKind, DisplayKind.DEFAULT),
+        .append(new KeyedCodec<>("DisplayKind", new EnumCodec<>(DisplayKind.class)),
+            (component, displayKind) -> component.displayKind = Objects.requireNonNullElse(displayKind, DisplayKind.Default),
             (component) -> component.displayKind)
         .add()
-        .append(new KeyedCodec<>("DisplayOrientation", DisplayOrientation.CODEC),
-            (component, displayOrientation) -> component.displayOrientation = Objects.requireNonNullElse(displayOrientation, DisplayOrientation.HORIZONTAL),
+        .append(new KeyedCodec<>("DisplayOrientation", new EnumCodec<>(DisplayOrientation.class)),
+            (component, displayOrientation) -> component.displayOrientation = Objects.requireNonNullElse(displayOrientation, DisplayOrientation.Horizontal),
             (component) -> component.displayOrientation)
         .add()
         .append(new KeyedCodec<>("AllowedItems", Codec.STRING_ARRAY),
