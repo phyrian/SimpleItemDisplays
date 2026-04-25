@@ -11,7 +11,7 @@
     "Material": "Solid",
     "DrawType": "Model",
     "Opacity": "Transparent",
-    "CustomModel": "Blocks/SimpleItemDisplays/Temple_Wind_Flowerpot.blockymodel",
+    "CustomModel": "Blocks/SimpleItemDisplays/Flowerpot.blockymodel",
     "CustomModelTexture": [
       {
         "Texture": "Blocks/SimpleItemDisplays/Temple_Wind_Flowerpot_Texture.png",

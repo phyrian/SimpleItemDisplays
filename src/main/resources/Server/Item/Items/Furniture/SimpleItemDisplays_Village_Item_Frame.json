@@ -10,7 +10,7 @@
     "Material": "Solid",
     "DrawType": "Model",
     "Opacity": "Transparent",
-    "CustomModel": "Blocks/SimpleItemDisplays/Village_Item_Frame.blockymodel",
+    "CustomModel": "Blocks/SimpleItemDisplays/Item_Frame.blockymodel",
     "CustomModelTexture": [
       {
         "Texture": "Blocks/SimpleItemDisplays/Village_Item_Frame_Texture.png",
