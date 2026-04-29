@@ -29,16 +29,20 @@
     "ParticleColor": "#5b3222",
     "BlockEntity": {
       "Components": {
-        "SimpleItemDisplays_ItemDisplayBlock": {
-          "DisplayTransform": {
-            "Position": {
-              "X": 0.5,
-              "Y": 0.1,
-              "Z": 0.5
-            },
-            "Scale": 0.6
-          },
-          "DisplayOrientation": "Vertical"
+        "SimpleItemDisplays_DisplayContainerBlock": {
+          "DisplayContainers": [
+            {
+              "DisplayTransform": {
+                "Position": {
+                  "X": 0.5,
+                  "Y": 0.1,
+                  "Z": 0.5
+                },
+                "Scale": 0.6
+              },
+              "DisplayOrientation": "Vertical"
+            }
+          ]
         }
       }
     },
