@@ -2,6 +2,7 @@ package org.phyrian.displays;
 
 import javax.annotation.Nonnull;
 
+import org.phyrian.displays.component.DisplayContainerBlock;
 import org.phyrian.displays.component.DisplayedItemComponent;
 import org.phyrian.displays.component.ItemDisplayBlock;
 import org.phyrian.displays.event.BlockReplaceEventSystem;
@@ -41,6 +42,10 @@ public class SimpleItemDisplaysPlugin extends JavaPlugin {
     LOGGER.atInfo().log("Setting up SimpleItemDisplays...");
     super.setup();
 
+    DisplayContainerBlock.TYPE = this.getChunkStoreRegistry().registerComponent(DisplayContainerBlock.class, "SimpleItemDisplays_DisplayContainerBlock", DisplayContainerBlock.CODEC);
+    ItemDisplayBlock.TYPE = this.getChunkStoreRegistry().registerComponent(ItemDisplayBlock.class, "SimpleItemDisplays_ItemDisplayBlock", ItemDisplayBlock.CODEC);
+    DisplayedItemComponent.TYPE = this.getEntityStoreRegistry().registerComponent(DisplayedItemComponent.class, "SimpleItemDisplays_DisplayedItem", DisplayedItemComponent.CODEC);
+
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_ChangeOrientation", ChangeOrientationInteraction.class, ChangeOrientationInteraction.CODEC);
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_ChangeScale", ChangeScaleInteraction.class, ChangeScaleInteraction.CODEC);
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_DisplayItem", DisplayItemInteraction.class, DisplayItemInteraction.CODEC);
@@ -49,8 +54,6 @@ public class SimpleItemDisplaysPlugin extends JavaPlugin {
     this.getEntityStoreRegistry().registerSystem(new BreakBlockEventSystem());
     this.getEntityStoreRegistry().registerSystem(new PlaceBlockEventSystem());
     this.getEntityStoreRegistry().registerSystem(new BlockReplaceEventSystem());
-    ItemDisplayBlock.TYPE = this.getChunkStoreRegistry().registerComponent(ItemDisplayBlock.class, "SimpleItemDisplays_ItemDisplayBlock", ItemDisplayBlock.CODEC);
-    DisplayedItemComponent.TYPE = this.getEntityStoreRegistry().registerComponent(DisplayedItemComponent.class, "SimpleItemDisplays_DisplayedItem", DisplayedItemComponent.CODEC);
 
     LOGGER.atInfo().log("SimpleItemDisplays setup complete!");
   }
