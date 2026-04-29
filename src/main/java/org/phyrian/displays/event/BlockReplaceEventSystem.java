@@ -21,7 +21,8 @@ public class BlockReplaceEventSystem extends EntityEventSystem<EntityStore, Bloc
   }
 
   @Override
-  public void handle(int i, @Nonnull ArchetypeChunk<EntityStore> archetypeChunk, @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer,
+  public void handle(int i, @Nonnull ArchetypeChunk<EntityStore> archetypeChunk,
+      @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer,
       @Nonnull BlockReplaceEvent event) {
     var world = store.getExternalData().getWorld();
     var chunkRef = event.getChunkRef();

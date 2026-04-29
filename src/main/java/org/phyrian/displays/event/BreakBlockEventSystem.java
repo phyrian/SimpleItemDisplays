@@ -22,7 +22,8 @@ public class BreakBlockEventSystem extends EntityEventSystem<EntityStore, BreakB
   }
 
   @Override
-  public void handle(int i, @Nonnull ArchetypeChunk<EntityStore> archetypeChunk, @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer,
+  public void handle(int i, @Nonnull ArchetypeChunk<EntityStore> archetypeChunk,
+      @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer,
       @Nonnull BreakBlockEvent event) {
     var world = store.getExternalData().getWorld();
     var pos = event.getTargetBlock();

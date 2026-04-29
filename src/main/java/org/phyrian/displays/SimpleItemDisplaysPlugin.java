@@ -18,6 +18,8 @@ import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Int
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 
+import lombok.Getter;
+
 /**
  * Adds custom interactions for putting items into Simple Item Displays
  */
@@ -25,6 +27,7 @@ public class SimpleItemDisplaysPlugin extends JavaPlugin {
 
   public static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
+  @Getter
   private static SimpleItemDisplaysPlugin instance;
 
   public SimpleItemDisplaysPlugin(@Nonnull JavaPluginInit init) {
@@ -60,13 +63,6 @@ public class SimpleItemDisplaysPlugin extends JavaPlugin {
   @Override
   protected void shutdown() {
     super.shutdown();
-  }
-
-  /**
-   * Gets the singleton instance of the plugin.
-   */
-  public static SimpleItemDisplaysPlugin getInstance() {
-    return instance;
   }
 
 }

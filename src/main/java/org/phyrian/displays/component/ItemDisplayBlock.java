@@ -37,7 +37,9 @@ import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import it.unimi.dsi.fastutil.Pair;
+import lombok.Data;
 
+@Data
 public class ItemDisplayBlock implements Component<ChunkStore> {
 
   private static final String DEFAULT_STATE = "default";
@@ -55,11 +57,14 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
   private Set<String> itemFilter;
 
   public ItemDisplayBlock() {
-    this(null, new DisplayTransform(), DisplayOrientation.Horizontal, DisplayKind.Default, null, null);
+    this(null, new DisplayTransform(), DisplayOrientation.Horizontal, DisplayKind.Default, null,
+        null);
   }
 
-  public ItemDisplayBlock(UUID attachedEntity, DisplayTransform displayTransform, DisplayOrientation displayOrientation, DisplayKind displayKind, Set<String> allowedItems, Set<String> allowedResourceTypes) {
-    this.anchoredEntityId = attachedEntity;
+  public ItemDisplayBlock(UUID anchoredEntityId, DisplayTransform displayTransform,
+      DisplayOrientation displayOrientation, DisplayKind displayKind, Set<String> allowedItems,
+      Set<String> allowedResourceTypes) {
+    this.anchoredEntityId = anchoredEntityId;
     this.displayTransform = displayTransform;
     this.displayOrientation = displayOrientation;
     this.displayKind = displayKind;
@@ -69,43 +74,8 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
   }
 
   public ItemDisplayBlock(ItemDisplayBlock other) {
-    this(other.anchoredEntityId, other.displayTransform, other.displayOrientation, other.displayKind, other.allowedItems, other.allowedBlockTypes);
-  }
-
-  public UUID getAnchoredEntityId() {
-    return this.anchoredEntityId;
-  }
-
-  public void setAnchoredEntityId(UUID attachedEntity) {
-    this.anchoredEntityId = attachedEntity;
-  }
-
-  public DisplayTransform getDisplayTransform() {
-    return displayTransform;
-  }
-
-  public void setDisplayTransform(DisplayTransform displayTransform) {
-    this.displayTransform = displayTransform;
-  }
-
-  public DisplayOrientation getDisplayOrientation() {
-    return displayOrientation;
-  }
-
-  public void setDisplayOrientation(DisplayOrientation displayOrientation) {
-    this.displayOrientation = displayOrientation;
-  }
-
-  public DisplayKind getDisplayKind() {
-    return displayKind;
-  }
-
-  public void setDisplayKind(DisplayKind displayKind) {
-    this.displayKind = displayKind;
-  }
-
-  public Set<String> getAllowedItems() {
-    return allowedItems;
+    this(other.anchoredEntityId, other.displayTransform, other.displayOrientation,
+        other.displayKind, other.allowedItems, other.allowedBlockTypes);
   }
 
   public void setAllowedItems(Set<String> allowedItems) {
@@ -113,10 +83,6 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
       this.itemFilter = null;
     }
     this.allowedItems = allowedItems;
-  }
-
-  public Set<String> getAllowedBlockTypes() {
-    return allowedBlockTypes;
   }
 
   public void setAllowedBlockTypes(Set<String> allowedBlockTypes) {
@@ -382,12 +348,13 @@ public class ItemDisplayBlock implements Component<ChunkStore> {
     }
   }
 
-  public static ComponentType<ChunkStore, ItemDisplayBlock> getComponentType() {
-    return TYPE;
+  @Override
+  public ItemDisplayBlock clone() {
+    return new ItemDisplayBlock(this);
   }
 
-  public Component<ChunkStore> clone() {
-    return new ItemDisplayBlock(this);
+  public static ComponentType<ChunkStore, ItemDisplayBlock> getComponentType() {
+    return TYPE;
   }
 
   static {

@@ -22,7 +22,8 @@ public class PlaceBlockEventSystem extends EntityEventSystem<EntityStore, PlaceB
   }
 
   @Override
-  public void handle(int i, @Nonnull ArchetypeChunk<EntityStore> archetypeChunk, @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer,
+  public void handle(int i, @Nonnull ArchetypeChunk<EntityStore> archetypeChunk,
+      @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer,
       @Nonnull PlaceBlockEvent event) {
     var world = store.getExternalData().getWorld();
     var pos = event.getTargetBlock();

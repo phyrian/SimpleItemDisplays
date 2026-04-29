@@ -14,6 +14,9 @@ import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
+import lombok.Data;
+
+@Data
 public class DisplayedItemComponent implements Component<EntityStore> {
   public static final BuilderCodec<DisplayedItemComponent> CODEC;
 
@@ -27,7 +30,8 @@ public class DisplayedItemComponent implements Component<EntityStore> {
     this(null, null, null);
   }
 
-  public DisplayedItemComponent(ItemStack itemStack, Vector3i displayPosition, Vector3d dropPosition) {
+  public DisplayedItemComponent(ItemStack itemStack, Vector3i displayPosition,
+      Vector3d dropPosition) {
     this.itemStack = itemStack;
     this.displayPosition = displayPosition;
     this.dropPosition = dropPosition;
@@ -35,30 +39,6 @@ public class DisplayedItemComponent implements Component<EntityStore> {
 
   public DisplayedItemComponent(DisplayedItemComponent other) {
     this(other.itemStack, other.displayPosition, other.dropPosition);
-  }
-
-  public ItemStack getItemStack() {
-    return this.itemStack;
-  }
-
-  public void setItemStack(ItemStack item) {
-    this.itemStack = item;
-  }
-
-  public Vector3i getDisplayPosition() {
-    return this.displayPosition;
-  }
-
-  public void setDisplayPosition(Vector3i pos) {
-    this.displayPosition = pos;
-  }
-
-  public Vector3d getDropPosition() {
-    return this.dropPosition;
-  }
-
-  public void setDropPosition(Vector3d pos) {
-    this.dropPosition = pos;
   }
 
   public void dropItem(Store<EntityStore> store) {
@@ -84,7 +64,8 @@ public class DisplayedItemComponent implements Component<EntityStore> {
     return TYPE;
   }
 
-  public Component<EntityStore> clone() {
+  @Override
+  public DisplayedItemComponent clone() {
     return new DisplayedItemComponent(this);
   }
 

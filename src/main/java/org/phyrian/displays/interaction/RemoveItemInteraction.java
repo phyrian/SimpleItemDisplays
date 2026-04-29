@@ -25,8 +25,10 @@ public class RemoveItemInteraction extends SimpleBlockInteraction {
   public static final BuilderCodec<RemoveItemInteraction> CODEC;
 
   @Override
-  protected void interactWithBlock(@Nonnull World world, @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull InteractionType type, @Nonnull InteractionContext context,
-      @Nullable ItemStack itemInHand, @Nonnull Vector3i pos, @Nonnull CooldownHandler cooldownHandler) {
+  protected void interactWithBlock(@Nonnull World world,
+      @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull InteractionType type,
+      @Nonnull InteractionContext context, @Nullable ItemStack itemInHand, @Nonnull Vector3i pos,
+      @Nonnull CooldownHandler cooldownHandler) {
     var indexChunk = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
     var chunk = world.getChunk(indexChunk);
     var blockType = world.getBlockType(pos);
@@ -46,7 +48,8 @@ public class RemoveItemInteraction extends SimpleBlockInteraction {
 
     var chunkRef = chunk.getBlockComponentEntity(pos.x, pos.y, pos.z);
     if (chunkRef == null) {
-      LOGGER.atWarning().log("Failed to interact with " + blockType.getId() + " at position " + pos + " due to missing chunk ref.");
+      LOGGER.atWarning().log("Failed to interact with " + blockType.getId() + " at position " + pos
+          + " due to missing chunk ref.");
       context.getState().state = InteractionState.Failed;
       return;
     }
@@ -63,8 +66,10 @@ public class RemoveItemInteraction extends SimpleBlockInteraction {
   }
 
   @Override
-  protected void simulateInteractWithBlock(@Nonnull InteractionType type, @Nonnull InteractionContext context, @Nullable ItemStack itemInHand,
-      @Nonnull World world, @Nonnull Vector3i targetBlock) {
+  protected void simulateInteractWithBlock(@Nonnull InteractionType type,
+      @Nonnull InteractionContext context, @Nullable ItemStack itemInHand, @Nonnull World world,
+      @Nonnull Vector3i targetBlock) {
+    // no-op
   }
 
   static {
