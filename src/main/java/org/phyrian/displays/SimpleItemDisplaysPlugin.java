@@ -51,9 +51,10 @@ public class SimpleItemDisplaysPlugin extends JavaPlugin {
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_DisplayItem", DisplayItemInteraction.class, DisplayItemInteraction.CODEC);
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_RemoveItem", RemoveItemInteraction.class, RemoveItemInteraction.CODEC);
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_RemoveDisplayedItem", RemoveDisplayedItemInteraction.class, RemoveDisplayedItemInteraction.CODEC);
+
+    this.getChunkStoreRegistry().registerSystem(new BlockReplaceEventSystem());
     this.getEntityStoreRegistry().registerSystem(new BreakBlockEventSystem());
     this.getEntityStoreRegistry().registerSystem(new PlaceBlockEventSystem());
-    this.getEntityStoreRegistry().registerSystem(new BlockReplaceEventSystem());
 
     LOGGER.atInfo().log("SimpleItemDisplays setup complete!");
   }

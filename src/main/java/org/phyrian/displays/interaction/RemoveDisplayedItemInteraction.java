@@ -1,11 +1,12 @@
 package org.phyrian.displays.interaction;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
+import org.phyrian.displays.component.DisplayContainerBlock;
 import org.phyrian.displays.component.DisplayedItemComponent;
-import org.phyrian.displays.component.ItemDisplayBlock;
 
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.Ref;
@@ -37,13 +38,14 @@ public class RemoveDisplayedItemInteraction extends SimpleInstantInteraction {
       return;
     }
 
-    var displayComponent = commandBuffer.getComponent(targetRef, DisplayedItemComponent.getComponentType());
-    if (displayComponent == null) {
+    var componentType = DisplayedItemComponent.getComponentType();
+    var component = commandBuffer.getComponent(targetRef, componentType);
+    if (component == null) {
       context.getState().state = InteractionState.Failed;
       return;
     }
 
-    var pos = displayComponent.getDisplayPosition();
+    var pos = component.getDisplayPosition();
     var chunk = world.getChunk(ChunkUtil.indexChunkFromBlock(pos.x, pos.z));
     var blockType = world.getBlockType(pos);
     var rotationIndex = world.getBlockRotationIndex(pos.x, pos.y, pos.z);
@@ -55,33 +57,46 @@ public class RemoveDisplayedItemInteraction extends SimpleInstantInteraction {
 
     var chunkRef = chunk.getBlockComponentEntity(pos.x, pos.y, pos.z);
     var chunkStore = world.getChunkStore().getStore();
-    var itemDisplay = chunkRef != null ? chunkStore.getComponent(chunkRef, ItemDisplayBlock.getComponentType()) : null;
+
+    DisplayContainerBlock display;
+    if (chunkRef != null) {
+      display = chunkStore.getComponent(chunkRef, DisplayContainerBlock.getComponentType());
+    } else {
+      display = null;
+    }
 
     var ref = context.getEntity();
-    if (blockType == null || itemDisplay == null || !isEntityAttached(targetRef, itemDisplay)) {
+    if (blockType == null || display == null || !isEntityAttached(targetRef, display)) {
       commandBuffer.run((store) -> {
-        displayComponent.dropItem(store, ref);
+        component.dropItem(store, ref);
         store.removeEntity(targetRef, RemoveReason.REMOVE);
-        if (itemDisplay != null) {
-          itemDisplay.updateState(commandBuffer, ref, pos, chunk, blockType, rotationIndex);
+        if (display != null) {
+          display.update(commandBuffer, ref, pos, chunk, blockType, rotationIndex);
         }
       });
-    } else {
-      itemDisplay.removeItem(commandBuffer, ref, pos, chunk, blockType, rotationIndex);
+      return;
+    }
+
+    if (!display.removeItem(commandBuffer, ref, pos, chunk, blockType, rotationIndex)) {
+      context.getState().state = InteractionState.Failed;
     }
   }
 
-  private static boolean isEntityAttached(Ref<EntityStore> ref, ItemDisplayBlock itemDisplay) {
-    if (itemDisplay.getAnchoredEntityId() == null) {
-      return false;
-    }
+  private static boolean isEntityAttached(Ref<EntityStore> ref, DisplayContainerBlock display) {
+    return Arrays.stream(display.getDisplayContainers())
+        .anyMatch(container -> {
+          var anchoredEntityId = container.getAnchoredEntityId();
+          if (anchoredEntityId == null) {
+            return false;
+          }
 
-    var uuidComponent = ref.getStore().getComponent(ref, UUIDComponent.getComponentType());
-    if (uuidComponent == null) {
-      return false;
-    }
+          var uuidComponent = ref.getStore().getComponent(ref, UUIDComponent.getComponentType());
+          if (uuidComponent == null) {
+            return false;
+          }
 
-    return Objects.equals(itemDisplay.getAnchoredEntityId(), uuidComponent.getUuid());
+          return Objects.equals(anchoredEntityId, uuidComponent.getUuid());
+        });
   }
 
   static {

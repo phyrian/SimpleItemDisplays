@@ -3,7 +3,7 @@ package org.phyrian.displays.interaction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.phyrian.displays.component.ItemDisplayBlock;
+import org.phyrian.displays.component.DisplayContainerBlock;
 
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.CommandBuffer;
@@ -39,8 +39,9 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
       return;
     }
 
-    var blockItemDisplay = blockType.getBlockEntity().getComponent(ItemDisplayBlock.getComponentType());
-    if (blockItemDisplay == null) {
+    var componentType = DisplayContainerBlock.getComponentType();
+    var blockTypeDisplay = blockType.getBlockEntity().getComponent(componentType);
+    if (blockTypeDisplay == null) {
       LOGGER.atWarning().log("Failed to interact with display due to missing ItemDisplayBlock component.");
       context.getState().state = InteractionState.Failed;
       return;
@@ -55,24 +56,14 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
     }
 
     var chunkStore = world.getChunkStore().getStore();
-    var itemDisplay = chunkStore.getComponent(chunkRef, ItemDisplayBlock.getComponentType());
-    if (itemDisplay == null) {
-      itemDisplay = new ItemDisplayBlock(blockItemDisplay);
-      chunkStore.addComponent(chunkRef, ItemDisplayBlock.getComponentType(), itemDisplay);
+    var display = chunkStore.getComponent(chunkRef, componentType);
+    if (display == null) {
+      display = new DisplayContainerBlock(blockTypeDisplay);
+      chunkStore.addComponent(chunkRef, componentType, display);
     }
 
-    var ref = context.getEntity();
-    if (itemDisplay.getAnchoredEntityId() != null) {
-      context.getState().state = InteractionState.Failed;
-      return;
-    }
 
     if (itemInHand == null) {
-      context.getState().state = InteractionState.Failed;
-      return;
-    }
-
-    if (!itemDisplay.canHoldItem(itemInHand.getItemId())) {
       context.getState().state = InteractionState.Failed;
       return;
     }
@@ -84,14 +75,18 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
     }
 
     if (context.getHeldItemContainer() != null) {
-      var transaction = context.getHeldItemContainer().removeItemStackFromSlot(context.getHeldItemSlot(), itemInHand, 1);
+      var transaction = context.getHeldItemContainer()
+          .removeItemStackFromSlot(context.getHeldItemSlot(), itemInHand, 1);
       if (!transaction.succeeded()) {
         context.getState().state = InteractionState.Failed;
         return;
       }
     }
 
-    itemDisplay.addItem(commandBuffer, ref, pos, itemStack, chunk, blockType, rotationIndex);
+    var ref = context.getEntity();
+    if (!display.addItem(commandBuffer, ref, pos, itemStack, chunk, blockType, rotationIndex)) {
+      context.getState().state = InteractionState.Failed;
+    }
   }
 
   @Override

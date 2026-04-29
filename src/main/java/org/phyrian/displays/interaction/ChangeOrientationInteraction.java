@@ -3,7 +3,7 @@ package org.phyrian.displays.interaction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.phyrian.displays.component.ItemDisplayBlock;
+import org.phyrian.displays.component.DisplayContainerBlock;
 import org.phyrian.displays.config.DisplayOrientation;
 
 import com.hypixel.hytale.codec.builder.BuilderCodec;
@@ -40,13 +40,6 @@ public class ChangeOrientationInteraction extends SimpleBlockInteraction {
       return;
     }
 
-    var blockItemDisplay = blockType.getBlockEntity().getComponent(ItemDisplayBlock.getComponentType());
-    if (blockItemDisplay == null) {
-      LOGGER.atWarning().log("Failed to interact with display due to missing ItemDisplayBlock component.");
-      context.getState().state = InteractionState.Failed;
-      return;
-    }
-
     var chunkRef = chunk.getBlockComponentEntity(pos.x, pos.y, pos.z);
     if (chunkRef == null) {
       LOGGER.atWarning().log("Failed to interact with " + blockType.getId() + " at position " + pos
@@ -56,16 +49,22 @@ public class ChangeOrientationInteraction extends SimpleBlockInteraction {
     }
 
     var chunkStore = world.getChunkStore().getStore();
-    var itemDisplay = chunkStore.getComponent(chunkRef, ItemDisplayBlock.getComponentType());
-    if (itemDisplay == null) {
+    var display = chunkStore.getComponent(chunkRef, DisplayContainerBlock.getComponentType());
+    if (display == null) {
+      LOGGER.atWarning().log("Failed to interact with display due to missing DisplayContainerBlock"
+          + " component.");
       context.getState().state = InteractionState.Failed;
       return;
     }
 
-    var currentOrientation = itemDisplay.getDisplayOrientation();
-    var newOrientation = (currentOrientation == null || currentOrientation == DisplayOrientation.Horizontal) ? DisplayOrientation.Vertical : DisplayOrientation.Horizontal;
-    itemDisplay.setDisplayOrientation(newOrientation);
-    itemDisplay.refreshDisplay(commandBuffer, context.getEntity(), pos, chunk, blockType, rotationIndex);
+    for (var displayContainer : display.getDisplayContainers()) {
+      var currentOrientation = displayContainer.getDisplayOrientation();
+      var newOrientation = (currentOrientation == DisplayOrientation.Vertical)
+          ? DisplayOrientation.Horizontal : DisplayOrientation.Vertical;
+      displayContainer.setDisplayOrientation(newOrientation);
+    }
+
+    display.update(commandBuffer, context.getEntity(), pos, chunk, blockType, rotationIndex);
   }
 
   @Override

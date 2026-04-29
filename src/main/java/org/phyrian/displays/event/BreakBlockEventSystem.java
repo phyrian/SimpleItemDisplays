@@ -3,7 +3,7 @@ package org.phyrian.displays.event;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.phyrian.displays.component.ItemDisplayBlock;
+import org.phyrian.displays.component.DisplayContainerBlock;
 
 import com.hypixel.hytale.component.Archetype;
 import com.hypixel.hytale.component.ArchetypeChunk;
@@ -42,9 +42,9 @@ public class BreakBlockEventSystem extends EntityEventSystem<EntityStore, BreakB
     }
 
     var chunkStore = world.getChunkStore().getStore();
-    var itemDisplay = chunkStore.getComponent(chunkRef, ItemDisplayBlock.getComponentType());
-    if (itemDisplay != null) {
-      itemDisplay.onDestroy(commandBuffer, world);
+    var display = chunkStore.getComponent(chunkRef, DisplayContainerBlock.getComponentType());
+    if (display != null) {
+      display.onDestroy(commandBuffer, pos, chunk);
     }
   }
 
