@@ -147,8 +147,8 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
   }
 
   public void onDestroy(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, WorldChunk chunk) {
-    for (int i = 0; i < size; i++) {
-      displayContainers[i].onDestroy(commandBuffer, pos, chunk);
+    for (var displayContainer : displayContainers) {
+      displayContainer.onDestroy(commandBuffer, pos, chunk);
     }
   }
 
