@@ -6,6 +6,14 @@ import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.codec.codecs.EnumCodec;
+import com.hypixel.hytale.codec.schema.SchemaContext;
+import com.hypixel.hytale.codec.schema.config.Schema;
+import com.hypixel.hytale.codec.validation.ValidationResults;
+import com.hypixel.hytale.codec.validation.Validator;
+import com.hypixel.hytale.codec.validation.ValidatorCache;
+import com.hypixel.hytale.server.core.asset.type.buildertool.config.BlockTypeListAsset;
+import com.hypixel.hytale.server.core.asset.type.item.config.ItemCategory;
+import com.hypixel.hytale.server.core.asset.type.item.config.ResourceType;
 
 import lombok.Data;
 
@@ -13,6 +21,7 @@ import lombok.Data;
 public class ItemFilter {
 
   public static final Codec<ItemFilter> CODEC;
+  public static final ValidatorCache<ItemFilter> VALIDATOR_CACHE;
 
   private ItemFilterType type;
   private String[] values;
@@ -46,5 +55,33 @@ public class ItemFilter {
             (component) -> component.values)
         .add()
         .build();
+    VALIDATOR_CACHE = new ValidatorCache<>(new ItemFilterValidator());
+  }
+
+  private static class ItemFilterValidator implements Validator<ItemFilter> {
+
+    @Override
+    public void accept(ItemFilter itemFilter, ValidationResults validationResults) {
+      var values = itemFilter.values;
+      if (values == null || values.length == 0) {
+        return;
+      }
+      switch (itemFilter.type) {
+        case ItemId -> {
+          // no-op - this one accepts globs for pattern matching
+        }
+        case ResourceType -> ResourceType.VALIDATOR_CACHE.getArrayValidator()
+            .accept(values, validationResults);
+        case BlockType -> BlockTypeListAsset.VALIDATOR_CACHE.getArrayValidator()
+            .accept(values, validationResults);
+        case ItemCategory -> ItemCategory.VALIDATOR_CACHE.getArrayValidator()
+            .accept(values, validationResults);
+      }
+    }
+
+    @Override
+    public void updateSchema(SchemaContext schemaContext, Schema schema) {
+      // no-op
+    }
   }
 }

@@ -4,6 +4,5 @@ public enum ItemFilterType {
   ItemId,
   ResourceType,
   BlockType,
-  Category,
-  Tag
+  ItemCategory
 }

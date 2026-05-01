@@ -174,6 +174,7 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
         .append(new KeyedCodec<>("ItemFilters", new ArrayCodec<>(ItemFilter.CODEC, ItemFilter[]::new)),
             (component, itemFilters) -> component.itemFilters = itemFilters,
             (component) -> component.itemFilters)
+        .addValidatorLate(() -> ItemFilter.VALIDATOR_CACHE.getArrayValidator().late())
         .add()
         .build();
   }
