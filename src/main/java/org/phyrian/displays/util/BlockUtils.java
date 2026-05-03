@@ -19,6 +19,14 @@ public class BlockUtils {
   private BlockUtils() {
   }
 
+  public static boolean hasState(BlockType blockType, String state) {
+    return blockType.getBlockForState(state) != null;
+  }
+
+  public static boolean isInState(BlockType blockType, String state) {
+    return state.equals(blockType.getStateForBlock(blockType));
+  }
+
   public static void changeState(@Nonnull CommandBuffer<EntityStore> commandBuffer,
       @Nullable Ref<EntityStore> ref, @Nonnull Vector3i pos, @Nonnull WorldChunk chunk,
       @Nonnull BlockType current, int rotation, String newState) {

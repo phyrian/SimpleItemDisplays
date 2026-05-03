@@ -53,6 +53,10 @@ public class DisplayContainer {
 
   public boolean setItem(CommandBuffer<EntityStore> commandBuffer, Vector3i pos,
       ItemStack itemStack, BlockType blockType, int rotationIndex) {
+    if (anchoredEntityId != null) {
+      return false;
+    }
+
     var variantRotation = blockType.getVariantRotation();
     var blockTransform = DisplayUtils.getBlockTransform(pos, rotationIndex, variantRotation,
         displayOrientation, displayTransform);

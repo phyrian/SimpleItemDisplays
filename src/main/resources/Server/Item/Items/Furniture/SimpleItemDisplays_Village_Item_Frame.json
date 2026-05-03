@@ -42,7 +42,9 @@
               },
               "DisplayOrientation": "Vertical"
             }
-          ]
+          ],
+          "AddItemSoundEventId": "SFX_Soft_Build",
+          "RemoveItemSoundEventId": "SFX_Soft_Break"
         }
       }
     },
@@ -62,13 +64,11 @@
     "State": {
       "Definitions": {
         "Full": {
-          "InteractionHint": "server.interactionHints.SimpleItemDisplays_removeItem",
-          "InteractionSoundEventId": "SFX_Soft_Build"
+          "InteractionHint": "server.interactionHints.SimpleItemDisplays_removeItem"
         }
       }
     },
-    "InteractionHint": "server.interactionHints.SimpleItemDisplays_addItem",
-    "InteractionSoundEventId": "SFX_Soft_Break"
+    "InteractionHint": "server.interactionHints.SimpleItemDisplays_addItem"
   },
   "PlayerAnimationsId": "Block",
   "Tags": {

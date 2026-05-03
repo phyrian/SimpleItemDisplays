@@ -18,9 +18,22 @@
       }
     ],
     "VariantRotation": "NESW",
+    "Gathering": {
+      "Breaking": {
+        "ItemId": "SimpleItemDisplays_Display_Case_Full",
+        "GatherType": "Woods"
+      }
+    },
     "BlockSoundSetId": "Glass",
     "BlockParticleSetId": "Glass",
     "ParticleColor": "#d1cfce",
+    "Support": {
+      "Down": [
+        {
+          "FaceType": "Full"
+        }
+      ]
+    },
     "BlockEntity": {
       "Components": {
         "SimpleItemDisplays_DisplayContainerBlock": {
@@ -34,7 +47,9 @@
                 }
               }
             }
-          ]
+          ],
+          "AddItemSoundEventId": "SFX_Soft_Build",
+          "RemoveItemSoundEventId": "SFX_Soft_Break"
         }
       }
     },
@@ -53,26 +68,11 @@
     "State": {
       "Definitions": {
         "Full": {
-          "InteractionHint": "server.interactionHints.SimpleItemDisplays_removeItem",
-          "InteractionSoundEventId": "SFX_Soft_Build"
+          "InteractionHint": "server.interactionHints.SimpleItemDisplays_removeItem"
         }
       }
     },
-    "InteractionHint": "server.interactionHints.SimpleItemDisplays_addItem",
-    "InteractionSoundEventId": "SFX_Soft_Break",
-    "Support": {
-      "Down": [
-        {
-          "FaceType": "Full"
-        }
-      ]
-    },
-    "Gathering": {
-      "Breaking": {
-        "ItemId": "SimpleItemDisplays_Display_Case_Full",
-        "GatherType": "Woods"
-      }
-    }
+    "InteractionHint": "server.interactionHints.SimpleItemDisplays_addItem"
   },
   "PlayerAnimationsId": "Block",
   "Tags": {

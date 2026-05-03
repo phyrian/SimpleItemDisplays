@@ -19,7 +19,9 @@ import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
+import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
+import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -38,6 +40,10 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
   private int size;
   private DisplayContainer[] displayContainers;
   private ItemFilter[] itemFilters;
+  private String addItemSoundEventId;
+  private transient int addItemSoundEventIndex;
+  private String removeItemSoundEventId;
+  private transient int removeItemSoundEventIndex;
 
   @Getter(AccessLevel.NONE)
   @Setter(AccessLevel.NONE)
@@ -49,14 +55,24 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
 
   public DisplayContainerBlock(int size, DisplayContainer[] displayContainers,
       ItemFilter[] itemFilters) {
+    this(size, displayContainers, itemFilters, null, null);
+  }
+
+  public DisplayContainerBlock(int size, DisplayContainer[] displayContainers,
+      ItemFilter[] itemFilters, String addItemSoundEventId, String removeItemSoundEventId) {
     this.size = size;
     this.displayContainers = displayContainers;
     this.itemFilters = itemFilters;
+    this.addItemSoundEventId = addItemSoundEventId;
+    this.removeItemSoundEventId = removeItemSoundEventId;
   }
 
   public DisplayContainerBlock(DisplayContainerBlock other) {
     this(other.size, ReflectionUtils.cloneArray(other.displayContainers, DisplayContainer.class),
-        ReflectionUtils.cloneArray(other.itemFilters, ItemFilter.class));
+        ReflectionUtils.cloneArray(other.itemFilters, ItemFilter.class), other.addItemSoundEventId,
+        other.removeItemSoundEventId);
+    this.addItemSoundEventIndex = other.addItemSoundEventIndex;
+    this.removeItemSoundEventIndex = other.removeItemSoundEventIndex;
   }
 
   public void setItemFilters(ItemFilter[] itemFilters) {
@@ -64,6 +80,15 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
       invalidateItemFilterCache();
     }
     this.itemFilters = itemFilters;
+  }
+
+  protected void processConfig() {
+    if (this.addItemSoundEventId != null) {
+      this.addItemSoundEventIndex = SoundEvent.getAssetMap().getIndex(this.addItemSoundEventId);
+    }
+    if (this.removeItemSoundEventId != null) {
+      this.removeItemSoundEventIndex = SoundEvent.getAssetMap().getIndex(this.removeItemSoundEventId);
+    }
   }
 
   public boolean isEmpty() {
@@ -99,9 +124,13 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
     var nextSlot = displayContainers[size];
     if (nextSlot.setItem(commandBuffer, pos, itemStack, blockType, rotationIndex)) {
       size++;
-      if (size == displayContainers.length) {
+      if (isFull() && BlockUtils.hasState(blockType, BlockUtils.FULL_STATE)) {
         BlockUtils.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex,
             BlockUtils.FULL_STATE);
+      }
+      if (addItemSoundEventIndex != 0) {
+        SoundUtil.playSoundEvent3d(ref, addItemSoundEventIndex, (double) pos.x + (double) 0.5F,
+            (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, commandBuffer);
       }
       return true;
     }
@@ -116,11 +145,15 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
 
     var lastSlot = displayContainers[size - 1];
     if (lastSlot.removeItem(commandBuffer, ref, pos, chunk)) {
-      if (size == displayContainers.length) {
+      size--;
+      if (!isFull() && BlockUtils.isInState(blockType, BlockUtils.FULL_STATE)) {
         BlockUtils.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex,
             BlockUtils.DEFAULT_STATE);
       }
-      size--;
+      if (removeItemSoundEventIndex != 0) {
+        SoundUtil.playSoundEvent3d(ref, removeItemSoundEventIndex, (double) pos.x + (double) 0.5F,
+            (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, commandBuffer);
+      }
       return true;
     }
     return false;
@@ -128,22 +161,21 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
 
   public void update(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref,
       Vector3i pos, WorldChunk chunk, BlockType blockType, int rotationIndex) {
-    var count = 0;
+    var fullCountainersCount = 0;
     for (var displayContainer : displayContainers) {
       if (displayContainer.update(commandBuffer, pos, chunk, blockType, rotationIndex)) {
-        count++;
+        fullCountainersCount++;
       }
     }
+    size = fullCountainersCount;
 
-    String newState;
-    if (count == displayContainers.length) {
-      newState = BlockUtils.FULL_STATE;
-    } else {
-      newState = BlockUtils.DEFAULT_STATE;
+    if (isFull() && BlockUtils.hasState(blockType, BlockUtils.FULL_STATE)) {
+      BlockUtils.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex,
+          BlockUtils.FULL_STATE);
+    } else if (BlockUtils.isInState(blockType, BlockUtils.FULL_STATE)) {
+      BlockUtils.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex,
+          BlockUtils.DEFAULT_STATE);
     }
-
-    size = count;
-    BlockUtils.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex, newState);
   }
 
   public void onDestroy(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, WorldChunk chunk) {
@@ -176,6 +208,17 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
             (component) -> component.itemFilters)
         .addValidatorLate(() -> ItemFilter.VALIDATOR_CACHE.getArrayValidator().late())
         .add()
+        .append(new KeyedCodec<>("AddItemSoundEventId", Codec.STRING),
+            (component, addItemSoundEventId) -> component.addItemSoundEventId = addItemSoundEventId,
+            (component) -> component.addItemSoundEventId)
+        .addValidatorLate(() -> SoundEvent.VALIDATOR_CACHE.getValidator().late())
+        .add()
+        .append(new KeyedCodec<>("RemoveItemSoundEventId", Codec.STRING),
+            (component, removeItemSoundEventId) -> component.removeItemSoundEventId = removeItemSoundEventId,
+            (component) -> component.removeItemSoundEventId)
+        .addValidatorLate(() -> SoundEvent.VALIDATOR_CACHE.getValidator().late())
+        .add()
+        .afterDecode(DisplayContainerBlock::processConfig)
         .build();
   }
 

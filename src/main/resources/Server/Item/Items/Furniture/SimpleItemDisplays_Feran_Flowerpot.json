@@ -56,7 +56,9 @@
                 "SimpleItemDisplays_FlowerpotPlants"
               ]
             }
-          ]
+          ],
+          "AddItemSoundEventId": "SFX_Grass_Build",
+          "RemoveItemSoundEventId": "SFX_Leaves_Break"
         }
       }
     },
@@ -76,13 +78,11 @@
     "State": {
       "Definitions": {
         "Full": {
-          "InteractionHint": "server.interactionHints.SimpleItemDisplays_removeItem",
-          "InteractionSoundEventId": "SFX_Grass_Build"
+          "InteractionHint": "server.interactionHints.SimpleItemDisplays_removeItem"
         }
       }
     },
-    "InteractionHint": "server.interactionHints.SimpleItemDisplays_addItem",
-    "InteractionSoundEventId": "SFX_Leaves_Break"
+    "InteractionHint": "server.interactionHints.SimpleItemDisplays_addItem"
   },
   "PlayerAnimationsId": "Block",
   "Tags": {
