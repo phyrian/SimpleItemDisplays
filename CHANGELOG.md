@@ -1,3 +1,8 @@
+# 0.3.0
+- Added a small and a large display case as well as an experimental weapon display case block. Thank you to SigynLaufeyson for the 3D models
+- Fixed display blocks not updating when replaced
+- Replaced the ItemDisplayBlock component with a more flexible DisplayContainerBlock component. Existing blocks using the old component will be migrated upon chunk loading.
+
 # 0.2.0
 - Added custom prop transformation for items with no block model:
   - Ingredients are now aligned flat against the surface (as flat as the model allows) 
