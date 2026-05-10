@@ -32,13 +32,11 @@ public class RemoveItemInteraction extends SimpleBlockInteraction {
     var indexChunk = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
     var chunk = world.getChunk(indexChunk);
     var blockType = world.getBlockType(pos);
-    var rotationIndex = world.getBlockRotationIndex(pos.x, pos.y, pos.z);
 
     if (blockType == null || chunk == null) {
       context.getState().state = InteractionState.Failed;
       return;
     }
-
 
     var chunkRef = chunk.getBlockComponentEntity(pos.x, pos.y, pos.z);
     if (chunkRef == null) {
@@ -58,7 +56,7 @@ public class RemoveItemInteraction extends SimpleBlockInteraction {
     }
 
     var ref = context.getEntity();
-    display.removeItem(commandBuffer, ref, pos, chunk, blockType, rotationIndex);
+    display.removeItem(commandBuffer, ref, pos, chunk);
   }
 
   @Override

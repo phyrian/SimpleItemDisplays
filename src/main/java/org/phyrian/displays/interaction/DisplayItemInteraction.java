@@ -84,7 +84,7 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
     }
 
     var ref = context.getEntity();
-    if (!display.addItem(commandBuffer, ref, pos, itemStack, chunk, blockType, rotationIndex)) {
+    if (!display.addItem(commandBuffer, ref, pos, itemStack, blockType, rotationIndex)) {
       context.getState().state = InteractionState.Failed;
     }
   }

@@ -58,9 +58,6 @@ public class ChangeScaleInteraction extends SimpleBlockInteraction {
       return;
     }
 
-    var blockItemDisplay = blockType.getBlockEntity()
-        .getComponent(DisplayContainerBlock.getComponentType());
-
     for (var displayContainer : display.getDisplayContainers()) {
       var displayTransform = displayContainer.getDisplayTransform();
       if (displayContainer.getDisplayTransform() == null) {
@@ -77,7 +74,7 @@ public class ChangeScaleInteraction extends SimpleBlockInteraction {
       displayTransform.setScale(newScale);
     }
 
-    display.update(commandBuffer, context.getEntity(), pos, chunk, blockType, rotationIndex);
+    display.update(commandBuffer, pos, chunk, blockType, rotationIndex);
   }
 
   @Override

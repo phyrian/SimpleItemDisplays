@@ -1,12 +1,9 @@
 package org.phyrian.displays.component;
 
 import java.util.Arrays;
-import java.util.Set;
 
 import org.phyrian.displays.config.DisplayContainer;
 import org.phyrian.displays.config.ItemFilter;
-import org.phyrian.displays.util.BlockUtils;
-import org.phyrian.displays.util.ItemUtils;
 import org.phyrian.displays.util.ReflectionUtils;
 
 import com.hypixel.hytale.codec.Codec;
@@ -21,15 +18,11 @@ import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
-import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
-import lombok.AccessLevel;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 @Data
 public class DisplayContainerBlock implements Component<ChunkStore> {
@@ -37,144 +30,52 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
   public static final BuilderCodec<DisplayContainerBlock> CODEC;
   public static ComponentType<ChunkStore, DisplayContainerBlock> TYPE;
 
-  private int size;
-  private DisplayContainer[] displayContainers;
-  private ItemFilter[] itemFilters;
-  private String addItemSoundEventId;
-  private transient int addItemSoundEventIndex;
-  private String removeItemSoundEventId;
-  private transient int removeItemSoundEventIndex;
+  protected DisplayContainer[] displayContainers = new DisplayContainer[]{};
+  protected ItemFilter[] itemFilters;
+  protected String addItemSoundEventId;
+  protected String removeItemSoundEventId;
 
-  @Getter(AccessLevel.NONE)
-  @Setter(AccessLevel.NONE)
-  private transient Set<String> itemFilterCache = null;
-
-  public DisplayContainerBlock() {
-    this(0, new DisplayContainer[]{}, new ItemFilter[]{});
+  private DisplayContainerBlock() {
   }
 
-  public DisplayContainerBlock(int size, DisplayContainer[] displayContainers,
-      ItemFilter[] itemFilters) {
-    this(size, displayContainers, itemFilters, null, null);
-  }
-
-  public DisplayContainerBlock(int size, DisplayContainer[] displayContainers,
-      ItemFilter[] itemFilters, String addItemSoundEventId, String removeItemSoundEventId) {
-    this.size = size;
+  public DisplayContainerBlock(DisplayContainer[] displayContainers, ItemFilter[] itemFilters) {
     this.displayContainers = displayContainers;
     this.itemFilters = itemFilters;
-    this.addItemSoundEventId = addItemSoundEventId;
-    this.removeItemSoundEventId = removeItemSoundEventId;
+    this.processConfig();
   }
 
   public DisplayContainerBlock(DisplayContainerBlock other) {
-    this(other.size, ReflectionUtils.cloneArray(other.displayContainers, DisplayContainer.class),
-        ReflectionUtils.cloneArray(other.itemFilters, ItemFilter.class), other.addItemSoundEventId,
-        other.removeItemSoundEventId);
-    this.addItemSoundEventIndex = other.addItemSoundEventIndex;
-    this.removeItemSoundEventIndex = other.removeItemSoundEventIndex;
-  }
-
-  public void setItemFilters(ItemFilter[] itemFilters) {
-    if (!Arrays.deepEquals(this.itemFilters, itemFilters)) {
-      invalidateItemFilterCache();
-    }
-    this.itemFilters = itemFilters;
-  }
-
-  protected void processConfig() {
-    if (this.addItemSoundEventId != null) {
-      this.addItemSoundEventIndex = SoundEvent.getAssetMap().getIndex(this.addItemSoundEventId);
-    }
-    if (this.removeItemSoundEventId != null) {
-      this.removeItemSoundEventIndex = SoundEvent.getAssetMap().getIndex(this.removeItemSoundEventId);
-    }
-  }
-
-  public boolean isEmpty() {
-    return size == 0;
-  }
-
-  public boolean isFull() {
-    return size >= displayContainers.length;
-  }
-
-  public void invalidateItemFilterCache() {
-    itemFilterCache = null;
-  }
-
-  public boolean canHoldItem(String itemId) {
-    if (itemFilters == null || itemFilters.length == 0) {
-      return true;
-    }
-
-    if (itemFilterCache == null) {
-      itemFilterCache = ItemUtils.findMatchingItemIds(itemFilters);
-    }
-
-    return itemFilterCache.contains(itemId);
+    this.displayContainers = ReflectionUtils.cloneArray(other.displayContainers, DisplayContainer.class);
+    this.itemFilters = Arrays.copyOf(other.itemFilters, other.itemFilters.length);
+    this.addItemSoundEventId = other.addItemSoundEventId;
+    this.removeItemSoundEventId = other.removeItemSoundEventId;
   }
 
   public boolean addItem(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref,
-      Vector3i pos, ItemStack itemStack, WorldChunk chunk, BlockType blockType, int rotationIndex) {
-    if (isFull() || !canHoldItem(itemStack.getItemId())) {
-      return false;
-    }
-
-    var nextSlot = displayContainers[size];
-    if (nextSlot.setItem(commandBuffer, pos, itemStack, blockType, rotationIndex)) {
-      size++;
-      if (isFull() && BlockUtils.hasState(blockType, BlockUtils.FULL_STATE)) {
-        BlockUtils.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex,
-            BlockUtils.FULL_STATE);
+      Vector3i pos, ItemStack itemStack, BlockType blockType, int rotationIndex) {
+    for (var displayContainer : displayContainers) {
+      if (displayContainer.addItem(commandBuffer, ref, pos, itemStack, blockType, rotationIndex)) {
+        return true;
       }
-      if (addItemSoundEventIndex != 0) {
-        SoundUtil.playSoundEvent3d(ref, addItemSoundEventIndex, (double) pos.x + (double) 0.5F,
-            (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, commandBuffer);
-      }
-      return true;
     }
     return false;
   }
 
   public boolean removeItem(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref,
-      Vector3i pos, WorldChunk chunk, BlockType blockType, int rotationIndex) {
-    if (isEmpty()) {
-      return false;
-    }
-
-    var lastSlot = displayContainers[size - 1];
-    if (lastSlot.removeItem(commandBuffer, ref, pos, chunk)) {
-      size--;
-      if (!isFull() && BlockUtils.isInState(blockType, BlockUtils.FULL_STATE)) {
-        BlockUtils.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex,
-            BlockUtils.DEFAULT_STATE);
+      Vector3i pos, WorldChunk chunk) {
+    for (int i = displayContainers.length - 1; i >= 0; i--) {
+      var displayContainer = displayContainers[i];
+      if (displayContainer.removeItem(commandBuffer, ref, pos, chunk)) {
+        return true;
       }
-      if (removeItemSoundEventIndex != 0) {
-        SoundUtil.playSoundEvent3d(ref, removeItemSoundEventIndex, (double) pos.x + (double) 0.5F,
-            (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, commandBuffer);
-      }
-      return true;
     }
     return false;
   }
 
-  public void update(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref,
-      Vector3i pos, WorldChunk chunk, BlockType blockType, int rotationIndex) {
-    var fullCountainersCount = 0;
+  public void update(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, WorldChunk chunk,
+      BlockType blockType, int rotationIndex) {
     for (var displayContainer : displayContainers) {
-      if (displayContainer.update(commandBuffer, pos, chunk, blockType, rotationIndex)) {
-        fullCountainersCount++;
-      }
-    }
-    size = fullCountainersCount;
-
-    if (isFull() && BlockUtils.hasState(blockType, BlockUtils.FULL_STATE)) {
-      BlockUtils.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex,
-          BlockUtils.FULL_STATE);
-    } else if (BlockUtils.isInState(blockType, BlockUtils.FULL_STATE)) {
-      BlockUtils.changeState(commandBuffer, ref, pos, chunk, blockType, rotationIndex,
-          BlockUtils.DEFAULT_STATE);
+      displayContainer.update(commandBuffer, pos, chunk, blockType, rotationIndex);
     }
   }
 
@@ -189,16 +90,27 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
     return new DisplayContainerBlock(this);
   }
 
+  protected void processConfig() {
+    for (var displayContainer : displayContainers) {
+      if (displayContainer.getItemFilters() == null) {
+        displayContainer.setItemFilters(itemFilters);
+      }
+      if (displayContainer.getAddItemSoundEventId() == null) {
+        displayContainer.setAddItemSoundEventId(addItemSoundEventId);
+      }
+      if (displayContainer.getRemoveItemSoundEventId() == null) {
+        displayContainer.setRemoveItemSoundEventId(removeItemSoundEventId);
+      }
+      displayContainer.refresh();
+    }
+  }
+
   public static ComponentType<ChunkStore, DisplayContainerBlock> getComponentType() {
     return TYPE;
   }
 
   static {
     CODEC = BuilderCodec.builder(DisplayContainerBlock.class, DisplayContainerBlock::new)
-        .append(new KeyedCodec<>("Size", Codec.INTEGER),
-            (component, size) -> component.size = size,
-            (component) -> component.size)
-        .add()
         .append(new KeyedCodec<>("DisplayContainers", new ArrayCodec<>(DisplayContainer.CODEC, DisplayContainer[]::new)),
             (component, displayContainers) -> component.displayContainers = displayContainers,
             (component) -> component.displayContainers)

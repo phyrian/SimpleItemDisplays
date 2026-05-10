@@ -1,5 +1,6 @@
 package org.phyrian.displays.config;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -11,31 +12,42 @@ import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.codec.codecs.EnumCodec;
+import com.hypixel.hytale.codec.codecs.array.ArrayCodec;
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
 import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
+import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
+import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Setter;
 
 @Data
 public class DisplayContainer {
 
   public static final Codec<DisplayContainer> CODEC;
 
-  private UUID anchoredEntityId;
-  private DisplayTransform displayTransform;
-  private DisplayOrientation displayOrientation;
-  private DisplayKind displayKind;
+  protected UUID anchoredEntityId;
+  protected DisplayTransform displayTransform = new DisplayTransform();
+  protected DisplayOrientation displayOrientation = DisplayOrientation.Horizontal;
+  protected DisplayKind displayKind = DisplayKind.Default;
+  protected ItemFilter[] itemFilters;
+  protected String addItemSoundEventId;
+  @Setter(AccessLevel.NONE)
+  protected transient int addItemSoundEventIndex;
+  protected String removeItemSoundEventId;
+  @Setter(AccessLevel.NONE)
+  protected transient int removeItemSoundEventIndex;
 
-  public DisplayContainer() {
-    this(null, new DisplayTransform(), DisplayOrientation.Horizontal, DisplayKind.Default);
+  private DisplayContainer() {
   }
 
   public DisplayContainer(UUID anchoredEntityId, DisplayTransform displayTransform,
@@ -44,16 +56,42 @@ public class DisplayContainer {
     this.displayTransform = displayTransform;
     this.displayOrientation = displayOrientation;
     this.displayKind = displayKind;
+    this.processConfig();
   }
 
   public DisplayContainer(DisplayContainer other) {
-    this(other.anchoredEntityId, other.displayTransform.clone(), other.displayOrientation,
-        other.displayKind);
+    this.anchoredEntityId = other.anchoredEntityId;
+    this.displayTransform = other.displayTransform.clone();
+    this.displayOrientation = other.displayOrientation;
+    this.displayKind = other.displayKind;
+    this.itemFilters = Arrays.copyOf(other.itemFilters, other.itemFilters.length);
+    this.addItemSoundEventId = other.addItemSoundEventId;
+    this.addItemSoundEventIndex = other.addItemSoundEventIndex;
+    this.removeItemSoundEventId = other.removeItemSoundEventId;
+    this.removeItemSoundEventIndex = other.removeItemSoundEventIndex;
   }
 
-  public boolean setItem(CommandBuffer<EntityStore> commandBuffer, Vector3i pos,
-      ItemStack itemStack, BlockType blockType, int rotationIndex) {
+  public boolean canHoldItem(String itemId) {
+    if (itemFilters == null || itemFilters.length == 0) {
+      return true;
+    }
+
+    for (var itemFilter : itemFilters) {
+      if (itemFilter.matches(itemId)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  public boolean addItem(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref,
+      Vector3i pos, ItemStack itemStack, BlockType blockType, int rotationIndex) {
     if (anchoredEntityId != null) {
+      return false;
+    }
+
+    if (!canHoldItem(itemStack.getItemId())) {
       return false;
     }
 
@@ -72,6 +110,10 @@ public class DisplayContainer {
       store.addEntity(holder, AddReason.SPAWN);
 
       this.setAnchoredEntityId(uuid);
+      if (addItemSoundEventIndex != 0) {
+        SoundUtil.playSoundEvent3d(ref, addItemSoundEventIndex, (double) pos.x + (double) 0.5F,
+            (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, commandBuffer);
+      }
     });
 
     return true;
@@ -98,21 +140,25 @@ public class DisplayContainer {
       store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
 
       this.setAnchoredEntityId(null);
+      if (removeItemSoundEventIndex != 0) {
+        SoundUtil.playSoundEvent3d(ref, removeItemSoundEventIndex, (double) pos.x + (double) 0.5F,
+            (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, commandBuffer);
+      }
     });
 
     return true;
   }
 
-  public boolean update(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, WorldChunk chunk,
+  public void update(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, WorldChunk chunk,
       BlockType blockType, int rotationIndex) {
     var anchoredEntity = findAnchoredEntity(pos, chunk);
     if (anchoredEntity == null) {
       this.setAnchoredEntityId(null);
-      return false;
+      return;
     }
 
     if (!anchoredEntity.isValid()) {
-      return false;
+      return;
     }
 
     var variantRotation = blockType.getVariantRotation();
@@ -143,8 +189,6 @@ public class DisplayContainer {
 
       this.setAnchoredEntityId(uuid);
     });
-
-    return true;
   }
 
   public void onDestroy(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, WorldChunk chunk) {
@@ -182,9 +226,22 @@ public class DisplayContainer {
         component -> Objects.equals(component.getDisplayPosition(), pos));
   }
 
+  public void refresh() {
+    processConfig();
+  }
+
   @Override
   public DisplayContainer clone() {
     return new DisplayContainer(this);
+  }
+
+  protected void processConfig() {
+    if (addItemSoundEventId != null) {
+      addItemSoundEventIndex = SoundEvent.getAssetMap().getIndex(addItemSoundEventId);
+    }
+    if (removeItemSoundEventId != null) {
+      removeItemSoundEventIndex = SoundEvent.getAssetMap().getIndex(removeItemSoundEventId);
+    }
   }
 
   static {
@@ -205,6 +262,22 @@ public class DisplayContainer {
             (component, displayOrientation) -> component.displayOrientation = Objects.requireNonNullElse(displayOrientation, DisplayOrientation.Horizontal),
             (component) -> component.displayOrientation)
         .add()
+        .append(new KeyedCodec<>("ItemFilters", new ArrayCodec<>(ItemFilter.CODEC, ItemFilter[]::new)),
+            (component, itemFilters) -> component.itemFilters = itemFilters,
+            (component) -> component.itemFilters)
+        .addValidatorLate(() -> ItemFilter.VALIDATOR_CACHE.getArrayValidator().late())
+        .add()
+        .append(new KeyedCodec<>("AddItemSoundEventId", Codec.STRING),
+            (component, addItemSoundEventId) -> component.addItemSoundEventId = addItemSoundEventId,
+            (component) -> component.addItemSoundEventId)
+        .addValidatorLate(() -> SoundEvent.VALIDATOR_CACHE.getValidator().late())
+        .add()
+        .append(new KeyedCodec<>("RemoveItemSoundEventId", Codec.STRING),
+            (component, removeItemSoundEventId) -> component.removeItemSoundEventId = removeItemSoundEventId,
+            (component) -> component.removeItemSoundEventId)
+        .addValidatorLate(() -> SoundEvent.VALIDATOR_CACHE.getValidator().late())
+        .add()
+        .afterDecode(DisplayContainer::processConfig)
         .build();
   }
 

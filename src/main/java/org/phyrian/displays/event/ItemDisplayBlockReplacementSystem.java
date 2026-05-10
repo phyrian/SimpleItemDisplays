@@ -37,20 +37,14 @@ public class ItemDisplayBlockReplacementSystem extends RefSystem<ChunkStore> {
     var newComponentType = DisplayContainerBlock.getComponentType();
     if (chunkStore.getComponent(ref, newComponentType) != null) {
       LOGGER.atInfo().log("Removing deprecated " + oldComponentType);
-      commandBuffer.run((store) -> {
-        store.removeComponent(ref, oldComponentType);
-      });
+      commandBuffer.run((store) -> store.removeComponent(ref, oldComponentType));
       return;
     }
 
     LOGGER.atInfo().log("Replacing deprecated " + oldComponentType + " with " + newComponentType);
 
-    var newComponent = new DisplayContainerBlock(
-        oldComponent.getAnchoredEntityId() != null ? 1 : 0,
-        getDisplayContainers(oldComponent),
-        getItemFilters(oldComponent)
-    );
-
+    var itemFilters = getItemFilters(oldComponent);
+    var newComponent = new DisplayContainerBlock(getDisplayContainers(oldComponent), itemFilters);
     commandBuffer.run((store) -> {
       store.addComponent(ref, newComponentType, newComponent);
       store.removeComponent(ref, oldComponentType);
@@ -71,7 +65,12 @@ public class ItemDisplayBlockReplacementSystem extends RefSystem<ChunkStore> {
 
   private DisplayContainer[] getDisplayContainers(ItemDisplayBlock itemDisplayBlock) {
     return new DisplayContainer[]{
-        new DisplayContainer(itemDisplayBlock.getAnchoredEntityId(), itemDisplayBlock.getDisplayTransform(), itemDisplayBlock.getDisplayOrientation(), itemDisplayBlock.getDisplayKind())
+        new DisplayContainer(
+            itemDisplayBlock.getAnchoredEntityId(),
+            itemDisplayBlock.getDisplayTransform(),
+            itemDisplayBlock.getDisplayOrientation(),
+            itemDisplayBlock.getDisplayKind()
+        )
     };
   }
 

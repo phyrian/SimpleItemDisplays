@@ -1,17 +1,11 @@
 package org.phyrian.displays.util;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.phyrian.displays.config.ItemFilter;
-
-import com.hypixel.hytale.common.util.StringUtil;
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.Ref;
@@ -21,7 +15,6 @@ import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.asset.type.blockhitbox.BlockBoundingBoxes;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
-import com.hypixel.hytale.server.core.asset.type.buildertool.config.BlockTypeListAsset;
 import com.hypixel.hytale.server.core.asset.type.item.config.Item;
 import com.hypixel.hytale.server.core.asset.type.model.config.ModelAsset;
 import com.hypixel.hytale.server.core.entity.entities.Player;
@@ -133,66 +126,5 @@ public class ItemUtils {
     //noinspection deprecation
     return new ItemStack(itemStack.getItemId(), itemStack.getQuantity(), itemStack.getDurability(),
         itemStack.getMaxDurability(), itemStack.getMetadata());
-  }
-
-  public static Set<String> findMatchingItemIds(ItemFilter[] itemFilters) {
-    var result = new HashSet<String>();
-    for (var itemFilter : itemFilters) {
-      findMatchingItemIds(itemFilter, result);
-    }
-    return result;
-  }
-
-  private static void findMatchingItemIds(ItemFilter itemFilter, Collection<String> out) {
-    var values = itemFilter.getValues();
-    if (values == null || values.length == 0) {
-      return;
-    }
-
-    var type = itemFilter.getType();
-    switch (type) {
-      case ItemId -> {
-        var globsLower = Arrays.stream(values).map(String::toLowerCase).toList();
-        for (var itemId : Item.getAssetMap().getAssetMap().keySet()) {
-          if (globsLower.stream()
-              .anyMatch(globLower -> StringUtil.isGlobMatching(globLower, itemId.toLowerCase()))) {
-            out.add(itemId);
-          }
-        }
-      }
-      case ResourceType -> {
-        var resourceTypeIds = Arrays.asList(values);
-        for (var entry : Item.getAssetMap().getAssetMap().entrySet()) {
-          var itemId = entry.getKey();
-          var item = entry.getValue();
-          if (Arrays.stream(item.getResourceTypes())
-              .anyMatch(it -> resourceTypeIds.contains(it.id))) {
-            out.add(itemId);
-          }
-        }
-      }
-      case BlockType -> {
-        for (var blockTypeId : values) {
-          var blockTypeList = BlockTypeListAsset.getAssetMap().getAsset(blockTypeId);
-          if (blockTypeList != null) {
-            out.addAll(blockTypeList.getBlockTypeKeys());
-          }
-        }
-      }
-      case ItemCategory -> {
-        var itemCategoryIds = Arrays.asList(values);
-        for (var entry : Item.getAssetMap().getAssetMap().entrySet()) {
-          var itemId = entry.getKey();
-          var item = entry.getValue();
-
-          var categories = item.getCategories();
-          var subCategory = item.getSubCategory();
-          if ((categories != null && Arrays.stream(categories).anyMatch(itemCategoryIds::contains))
-              || (subCategory != null && itemCategoryIds.contains(subCategory))) {
-            out.add(itemId);
-          }
-        }
-      }
-    }
   }
 }
