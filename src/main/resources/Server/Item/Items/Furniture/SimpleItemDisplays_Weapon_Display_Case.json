@@ -97,14 +97,7 @@
         ]
       }
     },
-    "State": {
-      "Definitions": {
-        "Full": {
-          "InteractionHint": "server.interactionHints.SimpleItemDisplays_removeItem"
-        }
-      }
-    },
-    "InteractionHint": "server.interactionHints.SimpleItemDisplays_addItem"
+    "InteractionHint": "server.interactionHints.SimpleItemDisplays_addOrRemoveItem"
   },
   "PlayerAnimationsId": "Block",
   "Tags": {
@@ -112,7 +105,7 @@
       "Furniture"
     ],
     "Family": [
-      "Village"
+      "Human"
     ]
   },
   "ItemSoundSetId": "ISS_Blocks_Wood",
@@ -123,8 +116,8 @@
         "ResourceTypeId": "Sands"
       },
       {
-        "Quantity": 1,
-        "ItemId": "Wood_Hardwood_Planks_Half"
+        "Quantity": 2,
+        "ItemId": "Wood_Hardwood_Planks"
       }
     ],
     "TimeSeconds": 0,

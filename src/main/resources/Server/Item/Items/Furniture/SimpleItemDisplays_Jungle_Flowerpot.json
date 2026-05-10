@@ -75,14 +75,8 @@
         ]
       }
     },
-    "State": {
-      "Definitions": {
-        "Full": {
-          "InteractionHint": "server.interactionHints.SimpleItemDisplays_removeItem"
-        }
-      }
-    },
-    "InteractionHint": "server.interactionHints.SimpleItemDisplays_addItem"
+
+    "InteractionHint": "server.interactionHints.SimpleItemDisplays_addOrRemoveItem"
   },
   "PlayerAnimationsId": "Block",
   "Tags": {
