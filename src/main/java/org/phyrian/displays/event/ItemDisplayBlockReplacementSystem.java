@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 
 import org.phyrian.displays.component.DisplayContainerBlock;
 import org.phyrian.displays.component.ItemDisplayBlock;
-import org.phyrian.displays.config.DisplayContainer;
+import org.phyrian.displays.config.DisplaySlot;
 import org.phyrian.displays.config.ItemFilter;
 import org.phyrian.displays.config.ItemFilterType;
 
@@ -43,8 +43,8 @@ public class ItemDisplayBlockReplacementSystem extends RefSystem<ChunkStore> {
 
     LOGGER.atInfo().log("Replacing deprecated " + oldComponentType + " with " + newComponentType);
 
-    var itemFilters = getItemFilters(oldComponent);
-    var newComponent = new DisplayContainerBlock(getDisplayContainers(oldComponent), itemFilters);
+    var itemFilters = createItemFilters(oldComponent);
+    var newComponent = new DisplayContainerBlock(createDisplaySlots(oldComponent), itemFilters);
     commandBuffer.run((store) -> {
       store.addComponent(ref, newComponentType, newComponent);
       store.removeComponent(ref, oldComponentType);
@@ -63,9 +63,9 @@ public class ItemDisplayBlockReplacementSystem extends RefSystem<ChunkStore> {
     return Archetype.of(ItemDisplayBlock.getComponentType());
   }
 
-  private DisplayContainer[] getDisplayContainers(ItemDisplayBlock itemDisplayBlock) {
-    return new DisplayContainer[]{
-        new DisplayContainer(
+  private DisplaySlot[] createDisplaySlots(ItemDisplayBlock itemDisplayBlock) {
+    return new DisplaySlot[]{
+        new DisplaySlot(
             itemDisplayBlock.getAnchoredEntityId(),
             itemDisplayBlock.getDisplayTransform(),
             itemDisplayBlock.getDisplayOrientation(),
@@ -74,7 +74,7 @@ public class ItemDisplayBlockReplacementSystem extends RefSystem<ChunkStore> {
     };
   }
 
-  private ItemFilter[] getItemFilters(ItemDisplayBlock itemDisplayBlock) {
+  private ItemFilter[] createItemFilters(ItemDisplayBlock itemDisplayBlock) {
     var allowedItems = itemDisplayBlock.getAllowedItems();
     var allowedBlockTypes = itemDisplayBlock.getAllowedBlockTypes();
 

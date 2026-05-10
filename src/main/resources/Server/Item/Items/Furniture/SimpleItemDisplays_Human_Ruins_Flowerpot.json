@@ -38,7 +38,7 @@
     "BlockEntity": {
       "Components": {
         "SimpleItemDisplays_DisplayContainerBlock": {
-          "DisplayContainers": [
+          "DisplaySlots": [
             {
               "DisplayTransform": {
                 "Position": {

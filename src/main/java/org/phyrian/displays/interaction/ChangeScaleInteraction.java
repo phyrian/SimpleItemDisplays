@@ -58,11 +58,11 @@ public class ChangeScaleInteraction extends SimpleBlockInteraction {
       return;
     }
 
-    for (var displayContainer : display.getDisplayContainers()) {
-      var displayTransform = displayContainer.getDisplayTransform();
-      if (displayContainer.getDisplayTransform() == null) {
+    for (var displaySlot : display.getDisplaySlots()) {
+      var displayTransform = displaySlot.getDisplayTransform();
+      if (displaySlot.getDisplayTransform() == null) {
         displayTransform = new DisplayTransform();
-        displayContainer.setDisplayTransform(displayTransform);
+        displaySlot.setDisplayTransform(displayTransform);
       }
 
       float currentScale = displayTransform.getScale();

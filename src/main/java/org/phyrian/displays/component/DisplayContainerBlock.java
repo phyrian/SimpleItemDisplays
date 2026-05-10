@@ -2,7 +2,7 @@ package org.phyrian.displays.component;
 
 import java.util.Arrays;
 
-import org.phyrian.displays.config.DisplayContainer;
+import org.phyrian.displays.config.DisplaySlot;
 import org.phyrian.displays.config.ItemFilter;
 import org.phyrian.displays.util.ReflectionUtils;
 
@@ -30,7 +30,7 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
   public static final BuilderCodec<DisplayContainerBlock> CODEC;
   public static ComponentType<ChunkStore, DisplayContainerBlock> TYPE;
 
-  protected DisplayContainer[] displayContainers = new DisplayContainer[]{};
+  protected DisplaySlot[] displaySlots = new DisplaySlot[]{};
   protected ItemFilter[] itemFilters;
   protected String addItemSoundEventId;
   protected String removeItemSoundEventId;
@@ -38,14 +38,14 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
   private DisplayContainerBlock() {
   }
 
-  public DisplayContainerBlock(DisplayContainer[] displayContainers, ItemFilter[] itemFilters) {
-    this.displayContainers = displayContainers;
+  public DisplayContainerBlock(DisplaySlot[] displaySlots, ItemFilter[] itemFilters) {
+    this.displaySlots = displaySlots;
     this.itemFilters = itemFilters;
     this.processConfig();
   }
 
   public DisplayContainerBlock(DisplayContainerBlock other) {
-    this.displayContainers = ReflectionUtils.cloneArray(other.displayContainers, DisplayContainer.class);
+    this.displaySlots = ReflectionUtils.cloneArray(other.displaySlots, DisplaySlot.class);
     this.itemFilters = Arrays.copyOf(other.itemFilters, other.itemFilters.length);
     this.addItemSoundEventId = other.addItemSoundEventId;
     this.removeItemSoundEventId = other.removeItemSoundEventId;
@@ -53,8 +53,8 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
 
   public boolean addItem(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref,
       Vector3i pos, ItemStack itemStack, BlockType blockType, int rotationIndex) {
-    for (var displayContainer : displayContainers) {
-      if (displayContainer.addItem(commandBuffer, ref, pos, itemStack, blockType, rotationIndex)) {
+    for (var displaySlot : displaySlots) {
+      if (displaySlot.addItem(commandBuffer, ref, pos, itemStack, blockType, rotationIndex)) {
         return true;
       }
     }
@@ -63,9 +63,9 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
 
   public boolean removeItem(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref,
       Vector3i pos, WorldChunk chunk) {
-    for (int i = displayContainers.length - 1; i >= 0; i--) {
-      var displayContainer = displayContainers[i];
-      if (displayContainer.removeItem(commandBuffer, ref, pos, chunk)) {
+    for (int i = displaySlots.length - 1; i >= 0; i--) {
+      var displaySlot = displaySlots[i];
+      if (displaySlot.removeItem(commandBuffer, ref, pos, chunk)) {
         return true;
       }
     }
@@ -74,14 +74,14 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
 
   public void update(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, WorldChunk chunk,
       BlockType blockType, int rotationIndex) {
-    for (var displayContainer : displayContainers) {
-      displayContainer.update(commandBuffer, pos, chunk, blockType, rotationIndex);
+    for (var displaySlot : displaySlots) {
+      displaySlot.update(commandBuffer, pos, chunk, blockType, rotationIndex);
     }
   }
 
   public void onDestroy(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, WorldChunk chunk) {
-    for (var displayContainer : displayContainers) {
-      displayContainer.onDestroy(commandBuffer, pos, chunk);
+    for (var displaySlot : displaySlots) {
+      displaySlot.onDestroy(commandBuffer, pos, chunk);
     }
   }
 
@@ -91,17 +91,17 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
   }
 
   protected void processConfig() {
-    for (var displayContainer : displayContainers) {
-      if (displayContainer.getItemFilters() == null) {
-        displayContainer.setItemFilters(itemFilters);
+    for (var displaySlot : displaySlots) {
+      if (displaySlot.getItemFilters() == null) {
+        displaySlot.setItemFilters(itemFilters);
       }
-      if (displayContainer.getAddItemSoundEventId() == null) {
-        displayContainer.setAddItemSoundEventId(addItemSoundEventId);
+      if (displaySlot.getAddItemSoundEventId() == null) {
+        displaySlot.setAddItemSoundEventId(addItemSoundEventId);
       }
-      if (displayContainer.getRemoveItemSoundEventId() == null) {
-        displayContainer.setRemoveItemSoundEventId(removeItemSoundEventId);
+      if (displaySlot.getRemoveItemSoundEventId() == null) {
+        displaySlot.setRemoveItemSoundEventId(removeItemSoundEventId);
       }
-      displayContainer.refresh();
+      displaySlot.refresh();
     }
   }
 
@@ -111,9 +111,9 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
 
   static {
     CODEC = BuilderCodec.builder(DisplayContainerBlock.class, DisplayContainerBlock::new)
-        .append(new KeyedCodec<>("DisplayContainers", new ArrayCodec<>(DisplayContainer.CODEC, DisplayContainer[]::new)),
-            (component, displayContainers) -> component.displayContainers = displayContainers,
-            (component) -> component.displayContainers)
+        .append(new KeyedCodec<>("DisplaySlots", new ArrayCodec<>(DisplaySlot.CODEC, DisplaySlot[]::new)),
+            (component, displaySlots) -> component.displaySlots = displaySlots,
+            (component) -> component.displaySlots)
         .add()
         .append(new KeyedCodec<>("ItemFilters", new ArrayCodec<>(ItemFilter.CODEC, ItemFilter[]::new)),
             (component, itemFilters) -> component.itemFilters = itemFilters,

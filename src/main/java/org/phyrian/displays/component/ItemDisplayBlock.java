@@ -20,6 +20,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import lombok.Data;
 
 @Data
+@Deprecated(forRemoval = true)
 public class ItemDisplayBlock implements Component<ChunkStore> {
 
   public static final BuilderCodec<ItemDisplayBlock> CODEC;

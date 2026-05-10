@@ -83,7 +83,7 @@ public class RemoveDisplayedItemInteraction extends SimpleInstantInteraction {
   }
 
   private static boolean isEntityAttached(Ref<EntityStore> ref, DisplayContainerBlock display) {
-    return Arrays.stream(display.getDisplayContainers())
+    return Arrays.stream(display.getDisplaySlots())
         .anyMatch(container -> {
           var anchoredEntityId = container.getAnchoredEntityId();
           if (anchoredEntityId == null) {

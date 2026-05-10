@@ -57,11 +57,11 @@ public class ChangeOrientationInteraction extends SimpleBlockInteraction {
       return;
     }
 
-    for (var displayContainer : display.getDisplayContainers()) {
-      var currentOrientation = displayContainer.getDisplayOrientation();
+    for (var displaySlot : display.getDisplaySlots()) {
+      var currentOrientation = displaySlot.getDisplayOrientation();
       var newOrientation = (currentOrientation == DisplayOrientation.Vertical)
           ? DisplayOrientation.Horizontal : DisplayOrientation.Vertical;
-      displayContainer.setDisplayOrientation(newOrientation);
+      displaySlot.setDisplayOrientation(newOrientation);
     }
 
     display.update(commandBuffer, pos, chunk, blockType, rotationIndex);

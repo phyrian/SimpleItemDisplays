@@ -31,9 +31,9 @@ import lombok.Data;
 import lombok.Setter;
 
 @Data
-public class DisplayContainer {
+public class DisplaySlot {
 
-  public static final Codec<DisplayContainer> CODEC;
+  public static final Codec<DisplaySlot> CODEC;
 
   protected UUID anchoredEntityId;
   protected DisplayTransform displayTransform = new DisplayTransform();
@@ -47,10 +47,10 @@ public class DisplayContainer {
   @Setter(AccessLevel.NONE)
   protected transient int removeItemSoundEventIndex;
 
-  private DisplayContainer() {
+  private DisplaySlot() {
   }
 
-  public DisplayContainer(UUID anchoredEntityId, DisplayTransform displayTransform,
+  public DisplaySlot(UUID anchoredEntityId, DisplayTransform displayTransform,
       DisplayOrientation displayOrientation, DisplayKind displayKind) {
     this.anchoredEntityId = anchoredEntityId;
     this.displayTransform = displayTransform;
@@ -59,7 +59,7 @@ public class DisplayContainer {
     this.processConfig();
   }
 
-  public DisplayContainer(DisplayContainer other) {
+  public DisplaySlot(DisplaySlot other) {
     this.anchoredEntityId = other.anchoredEntityId;
     this.displayTransform = other.displayTransform.clone();
     this.displayOrientation = other.displayOrientation;
@@ -231,8 +231,8 @@ public class DisplayContainer {
   }
 
   @Override
-  public DisplayContainer clone() {
-    return new DisplayContainer(this);
+  public DisplaySlot clone() {
+    return new DisplaySlot(this);
   }
 
   protected void processConfig() {
@@ -245,7 +245,7 @@ public class DisplayContainer {
   }
 
   static {
-    CODEC = BuilderCodec.builder(DisplayContainer.class, DisplayContainer::new)
+    CODEC = BuilderCodec.builder(DisplaySlot.class, DisplaySlot::new)
         .append(new KeyedCodec<>("AnchoredEntity", Codec.UUID_BINARY),
             (component, anchoredEntity) -> component.anchoredEntityId = anchoredEntity,
             (component) -> component.anchoredEntityId)
@@ -277,7 +277,7 @@ public class DisplayContainer {
             (component) -> component.removeItemSoundEventId)
         .addValidatorLate(() -> SoundEvent.VALIDATOR_CACHE.getValidator().late())
         .add()
-        .afterDecode(DisplayContainer::processConfig)
+        .afterDecode(DisplaySlot::processConfig)
         .build();
   }
 
