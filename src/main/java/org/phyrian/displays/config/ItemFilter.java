@@ -50,11 +50,11 @@ public class ItemFilter {
   }
 
   protected void processConfig() {
-    itemIds = new HashSet<>();
     if (values == null || values.length == 0) {
       return;
     }
 
+    var itemIds = new HashSet<String>();
     switch (type) {
       case ItemId -> {
         var globsLower = Arrays.stream(values).map(String::toLowerCase).toList();
@@ -99,6 +99,8 @@ public class ItemFilter {
         }
       }
     }
+
+    this.itemIds = Set.copyOf(itemIds);
   }
 
   static {
