@@ -1,0 +1,134 @@
+{
+  "TranslationProperties": {
+    "Name": "items.SimpleItemDisplays_Tavern_Balcony_Planter.name"
+  },
+  "Icon": "Icons/ItemsGenerated/SimpleItemDisplays/Tavern_Balcony_Planter.png",
+  "Categories": [
+    "Furniture.Containers"
+  ],
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "CustomModel": "Blocks/SimpleItemDisplays/Balcony_Planter.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Blocks/SimpleItemDisplays/Tavern_Balcony_Planter_Texture.png",
+        "Weight": 1
+      }
+    ],
+    "VariantRotation": "NESW",
+    "HitboxType": "SimpleItemDisplays_Balcony_Planter",
+    "Gathering": {
+      "Breaking": {
+        "ItemId": "SimpleItemDisplays_Tavern_Balcony_Planter",
+        "GatherType": "Woods"
+      }
+    },
+    "BlockParticleSetId": "Wood",
+    "BlockSoundSetId": "Wood",
+    "ParticleColor": "#5b3222",
+    "Support": {
+      "North": [
+        {
+          "FaceType": "Full"
+        }
+      ]
+    },
+    "BlockEntity": {
+      "Components": {
+        "SimpleItemDisplays_DisplayContainerBlock": {
+          "DisplaySlots": [
+            {
+              "DisplayTransform": {
+                "Position": {
+                  "X": 0.25,
+                  "Y": 1,
+                  "Z": 0.25
+                }
+              }
+            },
+            {
+              "DisplayTransform": {
+                "Position": {
+                  "X": 0.75,
+                  "Y": 1,
+                  "Z": 0.25
+                }
+              }
+            }
+          ],
+          "ItemFilters": [
+            {
+              "Type": "BlockType",
+              "Value": [
+                "SimpleItemDisplays_FlowerpotPlants"
+              ]
+            }
+          ],
+          "AddItemSoundEventId": "SFX_Soft_Build",
+          "RemoveItemSoundEventId": "SFX_Soft_Break"
+        }
+      }
+    },
+    "InteractionHitboxType": "SimpleItemDisplays_Balcony_Planter",
+    "Interactions": {
+      "Use": {
+        "Interactions": [
+          {
+            "Type": "Condition",
+            "Crouching": false,
+            "Next": "SimpleItemDisplays_Display_Item",
+            "Failed": "SimpleItemDisplays_Remove_Item"
+          }
+        ]
+      }
+    },
+    "InteractionHint": "server.interactionHints.SimpleItemDisplays_addOrRemoveItem"
+  },
+  "PlayerAnimationsId": "Block",
+  "Tags": {
+    "Type": [
+      "Furniture"
+    ],
+    "Family": [
+      "Tavern"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Blocks_Wood",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Wood_Hardwood_Planks",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Soil_Dirt",
+        "Quantity": 1
+      }
+    ],
+    "TimeSeconds": 0,
+    "BenchRequirement": [
+      {
+        "Id": "Furniture_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Furniture_Misc"
+        ]
+      }
+    ],
+    "OutputQuantity": 1
+  },
+  "IconProperties": {
+    "Scale": 0.58823,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0,
+      -25
+    ]
+  }
+}
