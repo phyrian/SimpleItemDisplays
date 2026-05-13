@@ -1,10 +1,7 @@
 package org.phyrian.displays.component;
 
-import java.util.Arrays;
-
 import org.phyrian.displays.config.DisplaySlot;
 import org.phyrian.displays.config.ItemFilter;
-import org.phyrian.displays.util.ReflectionUtils;
 
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
@@ -23,6 +20,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import lombok.Data;
+import static org.phyrian.displays.util.ReflectionUtils.copyArray;
 
 @Data
 public class DisplayContainerBlock implements Component<ChunkStore> {
@@ -45,8 +43,8 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
   }
 
   public DisplayContainerBlock(DisplayContainerBlock other) {
-    this.displaySlots = ReflectionUtils.cloneArray(other.displaySlots, DisplaySlot.class);
-    this.itemFilters = Arrays.copyOf(other.itemFilters, other.itemFilters.length);
+    this.displaySlots = copyArray(other.displaySlots, DisplaySlot::clone);
+    this.itemFilters = copyArray(other.itemFilters);
     this.addItemSoundEventId = other.addItemSoundEventId;
     this.removeItemSoundEventId = other.removeItemSoundEventId;
   }

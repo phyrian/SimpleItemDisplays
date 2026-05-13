@@ -1,6 +1,5 @@
 package org.phyrian.displays.config;
 
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -29,6 +28,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
+import static org.phyrian.displays.util.ReflectionUtils.copyArray;
 
 @Data
 public class DisplaySlot {
@@ -64,7 +64,7 @@ public class DisplaySlot {
     this.displayTransform = other.displayTransform.clone();
     this.displayOrientation = other.displayOrientation;
     this.displayKind = other.displayKind;
-    this.itemFilters = Arrays.copyOf(other.itemFilters, other.itemFilters.length);
+    this.itemFilters = copyArray(other.itemFilters);
     this.addItemSoundEventId = other.addItemSoundEventId;
     this.addItemSoundEventIndex = other.addItemSoundEventIndex;
     this.removeItemSoundEventId = other.removeItemSoundEventId;
