@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.phyrian.displays.component.DisplayedItemComponent;
 import org.phyrian.displays.util.DisplayUtils;
 import org.phyrian.displays.util.EntityUtils;
+import org.phyrian.displays.util.ItemTransferContext;
 
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
@@ -20,7 +21,6 @@ import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
-import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -86,12 +86,17 @@ public class DisplaySlot {
   }
 
   public boolean addItem(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref,
-      Vector3i pos, ItemStack itemStack, BlockType blockType, int rotationIndex) {
+      Vector3i pos, ItemTransferContext transferContext, BlockType blockType, int rotationIndex) {
     if (anchoredEntityId != null) {
       return false;
     }
 
-    if (!canHoldItem(itemStack.getItemId())) {
+    if (!canHoldItem(transferContext.getItemStack().getItemId())) {
+      return false;
+    }
+
+    var itemStack = transferContext.remove(1);
+    if (itemStack == null) {
       return false;
     }
 
@@ -124,11 +129,11 @@ public class DisplaySlot {
     var anchoredEntity = findAnchoredEntity(pos, chunk);
     if (anchoredEntity == null) {
       this.setAnchoredEntityId(null);
-      return true;
+      return false;
     }
 
     if (!anchoredEntity.isValid()) {
-      return true;
+      return false;
     }
 
     commandBuffer.run((store) -> {
@@ -227,6 +232,8 @@ public class DisplaySlot {
   }
 
   public void refresh() {
+    addItemSoundEventIndex = 0;
+    removeItemSoundEventIndex = 0;
     processConfig();
   }
 

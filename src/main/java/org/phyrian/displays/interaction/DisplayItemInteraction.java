@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.phyrian.displays.component.DisplayContainerBlock;
+import org.phyrian.displays.util.ItemTransferContext;
 
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.CommandBuffer;
@@ -62,29 +63,21 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
       chunkStore.addComponent(chunkRef, componentType, display);
     }
 
-
     if (itemInHand == null) {
       context.getState().state = InteractionState.Failed;
       return;
     }
 
-    var itemStack = itemInHand.withQuantity(1);
-    if (itemStack == null) {
+    var itemContainer = context.getHeldItemContainer();
+    if (itemContainer == null) {
       context.getState().state = InteractionState.Failed;
       return;
     }
 
-    if (context.getHeldItemContainer() != null) {
-      var transaction = context.getHeldItemContainer()
-          .removeItemStackFromSlot(context.getHeldItemSlot(), itemInHand, 1);
-      if (!transaction.succeeded()) {
-        context.getState().state = InteractionState.Failed;
-        return;
-      }
-    }
-
     var ref = context.getEntity();
-    if (!display.addItem(commandBuffer, ref, pos, itemStack, blockType, rotationIndex)) {
+    var itemSlot = context.getHeldItemSlot();
+    var transferContext = new ItemTransferContext(itemContainer, itemSlot, itemInHand);
+    if (!display.addItem(commandBuffer, ref, pos, transferContext, blockType, rotationIndex)) {
       context.getState().state = InteractionState.Failed;
     }
   }

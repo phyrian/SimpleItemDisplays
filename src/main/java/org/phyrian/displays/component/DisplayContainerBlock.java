@@ -2,6 +2,7 @@ package org.phyrian.displays.component;
 
 import org.phyrian.displays.config.DisplaySlot;
 import org.phyrian.displays.config.ItemFilter;
+import org.phyrian.displays.util.ItemTransferContext;
 
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
@@ -14,7 +15,6 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
-import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -50,9 +50,9 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
   }
 
   public boolean addItem(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref,
-      Vector3i pos, ItemStack itemStack, BlockType blockType, int rotationIndex) {
+      Vector3i pos, ItemTransferContext transferContext, BlockType blockType, int rotationIndex) {
     for (var displaySlot : displaySlots) {
-      if (displaySlot.addItem(commandBuffer, ref, pos, itemStack, blockType, rotationIndex)) {
+      if (displaySlot.addItem(commandBuffer, ref, pos, transferContext, blockType, rotationIndex)) {
         return true;
       }
     }
