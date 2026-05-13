@@ -77,7 +77,15 @@ public class RemoveDisplayedItemInteraction extends SimpleInstantInteraction {
       return;
     }
 
-    if (!display.removeItem(commandBuffer, ref, pos, world)) {
+    var uuidComponent = commandBuffer.getComponent(targetRef, UUIDComponent.getComponentType());
+    if (uuidComponent != null) {
+      var uuid = uuidComponent.getUuid();
+      if (display.removeItem(uuid, commandBuffer, ref, pos, world)) {
+        return;
+      }
+    }
+
+    if (!display.removeLastItem(commandBuffer, ref, pos, world)) {
       context.getState().state = InteractionState.Failed;
     }
   }

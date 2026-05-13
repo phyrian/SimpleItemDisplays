@@ -56,7 +56,7 @@ public class RemoveItemInteraction extends SimpleBlockInteraction {
     }
 
     var ref = context.getEntity();
-    display.removeItem(commandBuffer, ref, pos, world);
+    display.removeLastItem(commandBuffer, ref, pos, world);
   }
 
   @Override

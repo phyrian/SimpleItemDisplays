@@ -4,7 +4,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.phyrian.displays.component.DisplayContainerBlock;
-import org.phyrian.displays.util.ItemTransferContext;
 
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.CommandBuffer;
@@ -13,7 +12,6 @@ import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.protocol.InteractionState;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.entity.InteractionContext;
-import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHandler;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.client.SimpleBlockInteraction;
 import com.hypixel.hytale.server.core.universe.world.World;
@@ -28,7 +26,7 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
   @Override
   protected void interactWithBlock(@Nonnull World world,
       @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull InteractionType type,
-      @Nonnull InteractionContext context, @Nullable ItemStack itemInHand, @Nonnull Vector3i pos,
+      @Nonnull InteractionContext context, @Nullable com.hypixel.hytale.server.core.inventory.ItemStack itemInHand, @Nonnull Vector3i pos,
       @Nonnull CooldownHandler cooldownHandler) {
     var indexChunk = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
     var chunk = world.getChunk(indexChunk);
@@ -75,16 +73,16 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
     }
 
     var ref = context.getEntity();
-    var itemSlot = context.getHeldItemSlot();
-    var transferContext = new ItemTransferContext(itemContainer, itemSlot, itemInHand);
-    if (!display.addItem(commandBuffer, ref, pos, transferContext, blockType, rotationIndex)) {
+    var slot = context.getHeldItemSlot();
+    if (!display.addItem(itemContainer, slot, 1, commandBuffer, ref, pos, blockType,
+        rotationIndex)) {
       context.getState().state = InteractionState.Failed;
     }
   }
 
   @Override
   protected void simulateInteractWithBlock(@Nonnull InteractionType type,
-      @Nonnull InteractionContext context, @Nullable ItemStack itemInHand, @Nonnull World world,
+      @Nonnull InteractionContext context, @Nullable com.hypixel.hytale.server.core.inventory.ItemStack itemInHand, @Nonnull World world,
       @Nonnull Vector3i targetBlock) {
     // no-op
   }

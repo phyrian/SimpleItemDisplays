@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.phyrian.displays.component.DisplayedItemComponent;
 import org.phyrian.displays.util.DisplayUtils;
 import org.phyrian.displays.util.EntityUtils;
-import org.phyrian.displays.util.ItemTransferContext;
 
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
@@ -21,6 +20,7 @@ import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
+import com.hypixel.hytale.server.core.inventory.container.ItemContainer;
 import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -86,20 +86,32 @@ public class DisplaySlot {
     return false;
   }
 
-  public boolean addItem(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref,
-      Vector3i pos, ItemTransferContext transferContext, BlockType blockType, int rotationIndex) {
+  public boolean addItem(ItemContainer itemContainer, byte slot, int amount,
+      CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref, Vector3i pos,
+      BlockType blockType, int rotationIndex) {
     if (anchoredEntityId != null) {
       return false;
     }
 
-    if (!canHoldItem(transferContext.getItemStack().getItemId())) {
-      return false;
-    }
-
-    var itemStack = transferContext.remove(1);
+    var itemStack = itemContainer.getItemStack(slot);
     if (itemStack == null) {
       return false;
     }
+
+    if (!canHoldItem(itemStack.getItemId())) {
+      return false;
+    }
+
+    var transferAmount = Math.min(itemStack.getQuantity(), amount);
+    if (transferAmount <= 0) {
+      return false;
+    }
+
+    var transaction = itemContainer.removeItemStackFromSlot(slot, itemStack, transferAmount);
+    if (!transaction.succeeded()) {
+      return false;
+    }
+    var takenItemStack = transaction.getOutput();
 
     var variantRotation = blockType.getVariantRotation();
     var blockTransform = DisplayUtils.getBlockTransform(pos, rotationIndex, variantRotation,
@@ -107,12 +119,12 @@ public class DisplaySlot {
 
     commandBuffer.run((store) -> {
       var uuid = UUID.randomUUID();
-      var holder = DisplayUtils.createDisplayEntity(store, itemStack, rotationIndex,
+      var holder = DisplayUtils.createDisplayEntity(store, takenItemStack, rotationIndex,
           displayOrientation, blockTransform, displayKind);
 
       holder.putComponent(UUIDComponent.getComponentType(), new UUIDComponent(uuid));
       holder.putComponent(DisplayedItemComponent.getComponentType(),
-          new DisplayedItemComponent(itemStack, pos, blockTransform.getPosition()));
+          new DisplayedItemComponent(takenItemStack, pos, blockTransform.getPosition()));
 
       store.addEntity(holder, AddReason.SPAWN);
       this.setAnchoredEntityId(uuid);
