@@ -71,13 +71,13 @@ public class RemoveDisplayedItemInteraction extends SimpleInstantInteraction {
         component.dropItem(store, ref);
         store.removeEntity(targetRef, RemoveReason.REMOVE);
         if (display != null) {
-          display.update(commandBuffer, pos, chunk, blockType, rotationIndex);
+          display.update(commandBuffer, pos, world, blockType, rotationIndex);
         }
       });
       return;
     }
 
-    if (!display.removeItem(commandBuffer, ref, pos, chunk)) {
+    if (!display.removeItem(commandBuffer, ref, pos, world)) {
       context.getState().state = InteractionState.Failed;
     }
   }

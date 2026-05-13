@@ -64,7 +64,7 @@ public class ChangeOrientationInteraction extends SimpleBlockInteraction {
       displaySlot.setDisplayOrientation(newOrientation);
     }
 
-    display.update(commandBuffer, pos, chunk, blockType, rotationIndex);
+    display.update(commandBuffer, pos, world, blockType, rotationIndex);
   }
 
   @Override

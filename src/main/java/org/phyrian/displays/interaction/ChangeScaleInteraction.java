@@ -74,7 +74,7 @@ public class ChangeScaleInteraction extends SimpleBlockInteraction {
       displayTransform.setScale(newScale);
     }
 
-    display.update(commandBuffer, pos, chunk, blockType, rotationIndex);
+    display.update(commandBuffer, pos, world, blockType, rotationIndex);
   }
 
   @Override

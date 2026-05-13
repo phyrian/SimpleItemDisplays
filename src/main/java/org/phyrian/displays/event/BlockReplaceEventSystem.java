@@ -56,11 +56,11 @@ public class BlockReplaceEventSystem extends EntityEventSystem<ChunkStore, Block
       };
 
       if (event.getNewEntity().getComponent(componentType) == null) {
-        component.onDestroy(entityCommandBuffer, pos, chunk);
+        component.onDestroy(entityCommandBuffer, pos, world);
       } else {
         var blockType = chunk.getBlockType(pos);
         var rotationIndex = world.getBlockRotationIndex(pos.x, pos.y, pos.z);
-        component.update(entityCommandBuffer, pos, chunk, blockType, rotationIndex);
+        component.update(entityCommandBuffer, pos, world, blockType, rotationIndex);
       }
     }
   }

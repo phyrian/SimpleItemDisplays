@@ -22,12 +22,13 @@ import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.universe.world.SoundUtil;
-import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
+import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
+import static com.hypixel.hytale.protocol.SoundCategory.SFX;
 import static org.phyrian.displays.util.ReflectionUtils.copyArray;
 
 @Data
@@ -106,15 +107,16 @@ public class DisplaySlot {
 
     commandBuffer.run((store) -> {
       var uuid = UUID.randomUUID();
-      var component = new DisplayedItemComponent(itemStack, pos, blockTransform.getPosition());
-
       var holder = DisplayUtils.createDisplayEntity(store, itemStack, rotationIndex,
           displayOrientation, blockTransform, displayKind);
-      holder.putComponent(UUIDComponent.getComponentType(), new UUIDComponent(uuid));
-      holder.putComponent(DisplayedItemComponent.getComponentType(), component);
-      store.addEntity(holder, AddReason.SPAWN);
 
+      holder.putComponent(UUIDComponent.getComponentType(), new UUIDComponent(uuid));
+      holder.putComponent(DisplayedItemComponent.getComponentType(),
+          new DisplayedItemComponent(itemStack, pos, blockTransform.getPosition()));
+
+      store.addEntity(holder, AddReason.SPAWN);
       this.setAnchoredEntityId(uuid);
+
       if (addItemSoundEventIndex != 0) {
         SoundUtil.playSoundEvent3d(ref, addItemSoundEventIndex, (double) pos.x + (double) 0.5F,
             (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, commandBuffer);
@@ -125,8 +127,8 @@ public class DisplaySlot {
   }
 
   public boolean removeItem(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref,
-      Vector3i pos, WorldChunk chunk) {
-    var anchoredEntity = findAnchoredEntity(pos, chunk);
+      Vector3i pos, World world) {
+    var anchoredEntity = EntityUtils.getEntity(world, anchoredEntityId);
     if (anchoredEntity == null) {
       this.setAnchoredEntityId(null);
       return false;
@@ -143,8 +145,8 @@ public class DisplaySlot {
       }
 
       store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
-
       this.setAnchoredEntityId(null);
+
       if (removeItemSoundEventIndex != 0) {
         SoundUtil.playSoundEvent3d(ref, removeItemSoundEventIndex, (double) pos.x + (double) 0.5F,
             (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, commandBuffer);
@@ -154,9 +156,9 @@ public class DisplaySlot {
     return true;
   }
 
-  public void update(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, WorldChunk chunk,
+  public void update(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, World world,
       BlockType blockType, int rotationIndex) {
-    var anchoredEntity = findAnchoredEntity(pos, chunk);
+    var anchoredEntity = EntityUtils.getEntity(world, anchoredEntityId);
     if (anchoredEntity == null) {
       this.setAnchoredEntityId(null);
       return;
@@ -196,8 +198,8 @@ public class DisplaySlot {
     });
   }
 
-  public void onDestroy(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, WorldChunk chunk) {
-    var anchoredEntity = findAnchoredEntity(pos, chunk);
+  public void onDestroy(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, World world) {
+    var anchoredEntity = EntityUtils.getEntity(world, anchoredEntityId);
     if (anchoredEntity == null) {
       this.setAnchoredEntityId(null);
       return;
@@ -215,20 +217,12 @@ public class DisplaySlot {
 
       store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
       this.setAnchoredEntityId(null);
+
+      if (removeItemSoundEventIndex != 0) {
+        SoundUtil.playSoundEvent3d(removeItemSoundEventIndex, SFX, (double) pos.x + (double) 0.5F,
+            (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, commandBuffer);
+      }
     });
-  }
-
-  private Ref<EntityStore> findAnchoredEntity(Vector3i pos, WorldChunk chunk) {
-    var world = chunk.getWorld();
-
-    var anchoredEntity = EntityUtils.getEntity(world, this.anchoredEntityId);
-    if (anchoredEntity != null) {
-      return anchoredEntity;
-    }
-
-    // lookup displayed entity by display position
-    return EntityUtils.lookupEntity(chunk, DisplayedItemComponent.getComponentType(),
-        component -> Objects.equals(component.getDisplayPosition(), pos));
   }
 
   public void refresh() {

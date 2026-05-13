@@ -15,7 +15,7 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
-import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
+import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
@@ -60,26 +60,26 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
   }
 
   public boolean removeItem(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref,
-      Vector3i pos, WorldChunk chunk) {
+      Vector3i pos, World world) {
     for (int i = displaySlots.length - 1; i >= 0; i--) {
       var displaySlot = displaySlots[i];
-      if (displaySlot.removeItem(commandBuffer, ref, pos, chunk)) {
+      if (displaySlot.removeItem(commandBuffer, ref, pos, world)) {
         return true;
       }
     }
     return false;
   }
 
-  public void update(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, WorldChunk chunk,
+  public void update(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, World world,
       BlockType blockType, int rotationIndex) {
     for (var displaySlot : displaySlots) {
-      displaySlot.update(commandBuffer, pos, chunk, blockType, rotationIndex);
+      displaySlot.update(commandBuffer, pos, world, blockType, rotationIndex);
     }
   }
 
-  public void onDestroy(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, WorldChunk chunk) {
+  public void onDestroy(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, World world) {
     for (var displaySlot : displaySlots) {
-      displaySlot.onDestroy(commandBuffer, pos, chunk);
+      displaySlot.onDestroy(commandBuffer, pos, world);
     }
   }
 

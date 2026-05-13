@@ -44,7 +44,7 @@ public class BreakBlockEventSystem extends EntityEventSystem<EntityStore, BreakB
     var chunkStore = world.getChunkStore().getStore();
     var display = chunkStore.getComponent(chunkRef, DisplayContainerBlock.getComponentType());
     if (display != null) {
-      display.onDestroy(commandBuffer, pos, chunk);
+      display.onDestroy(commandBuffer, pos, world);
     }
   }
 
