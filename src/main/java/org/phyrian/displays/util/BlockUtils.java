@@ -5,10 +5,13 @@ import javax.annotation.Nullable;
 
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
+import com.hypixel.hytale.server.core.modules.block.BlockModule;
 import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
+import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 public class BlockUtils {
@@ -17,6 +20,34 @@ public class BlockUtils {
   public static final String FULL_STATE = "Full";
 
   private BlockUtils() {
+  }
+
+  @Nullable
+  public static Vector3i locateBlockByRef(Ref<ChunkStore> ref) {
+    var store = ref.getStore();
+    var blockStateInfo = store.getComponent(ref, BlockModule.BlockStateInfo.getComponentType());
+    if (blockStateInfo == null) {
+      return null;
+    }
+
+    var chunkRef = blockStateInfo.getChunkRef();
+    var worldChunk = store.getComponent(chunkRef, WorldChunk.getComponentType());
+    if (worldChunk == null) {
+      return null;
+    }
+
+    var chunkX = worldChunk.getX();
+    var chunkZ = worldChunk.getZ();
+
+    var blockIndexInColumn = blockStateInfo.getIndex();
+    var localX = ChunkUtil.xFromBlockInColumn(blockIndexInColumn);
+    var globalY = ChunkUtil.yFromBlockInColumn(blockIndexInColumn);
+    var localZ = ChunkUtil.zFromBlockInColumn(blockIndexInColumn);
+
+    var globalX = ChunkUtil.worldCoordFromLocalCoord(chunkX, localX);
+    var globalZ = ChunkUtil.worldCoordFromLocalCoord(chunkZ, localZ);
+
+    return new Vector3i(globalX, globalY, globalZ);
   }
 
   public static boolean hasState(BlockType blockType, String state) {

@@ -17,6 +17,7 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
 import com.hypixel.hytale.math.vector.Vector3i;
+import com.hypixel.hytale.server.core.asset.type.blockhitbox.BlockBoundingBoxes;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
@@ -47,6 +48,12 @@ public class DisplaySlot {
   protected String removeItemSoundEventId;
   @Setter(AccessLevel.NONE)
   protected transient int removeItemSoundEventIndex;
+  protected String interactionHitboxType; // TODO: implement interactable placeholder entity
+  @Setter(AccessLevel.NONE)
+  protected transient int interactionHitboxIndex;
+  protected String interactionHintEmpty;
+  protected String interactionHintFull;
+  protected String interactionHint;
 
   private DisplaySlot() {
   }
@@ -70,6 +77,11 @@ public class DisplaySlot {
     this.addItemSoundEventIndex = other.addItemSoundEventIndex;
     this.removeItemSoundEventId = other.removeItemSoundEventId;
     this.removeItemSoundEventIndex = other.removeItemSoundEventIndex;
+    this.interactionHitboxType = other.interactionHitboxType;
+    this.interactionHitboxIndex = other.interactionHitboxIndex;
+    this.interactionHintEmpty = other.interactionHintEmpty;
+    this.interactionHintFull = other.interactionHintFull;
+    this.interactionHint = other.interactionHint;
   }
 
   public boolean canHoldItem(String itemId) {
@@ -240,6 +252,7 @@ public class DisplaySlot {
   public void refresh() {
     addItemSoundEventIndex = 0;
     removeItemSoundEventIndex = 0;
+    interactionHitboxIndex = 0;
     processConfig();
   }
 
@@ -254,6 +267,9 @@ public class DisplaySlot {
     }
     if (removeItemSoundEventId != null) {
       removeItemSoundEventIndex = SoundEvent.getAssetMap().getIndex(removeItemSoundEventId);
+    }
+    if (interactionHitboxType != null) {
+      interactionHitboxIndex = BlockBoundingBoxes.getAssetMap().getIndex(interactionHitboxType);
     }
   }
 
@@ -289,6 +305,23 @@ public class DisplaySlot {
             (component, removeItemSoundEventId) -> component.removeItemSoundEventId = removeItemSoundEventId,
             (component) -> component.removeItemSoundEventId)
         .addValidatorLate(() -> SoundEvent.VALIDATOR_CACHE.getValidator().late())
+        .add()
+        .append(new KeyedCodec<>("InteractionHitboxType", Codec.STRING),
+            (component, interactionHitboxType) -> component.interactionHitboxType = interactionHitboxType,
+            (component) -> component.interactionHitboxType)
+        .addValidatorLate(() -> BlockBoundingBoxes.VALIDATOR_CACHE.getValidator().late())
+        .add()
+        .append(new KeyedCodec<>("InteractionHintFull", Codec.STRING),
+            (component, interactionHintFull) -> component.interactionHintFull = interactionHintFull,
+            (component) -> component.interactionHintFull)
+        .add()
+        .append(new KeyedCodec<>("InteractionHintEmpty", Codec.STRING),
+            (component, interactionHintEmpty) -> component.interactionHintEmpty = interactionHintEmpty,
+            (component) -> component.interactionHintEmpty)
+        .add()
+        .append(new KeyedCodec<>("InteractionHint", Codec.STRING),
+            (component, interactionHint) -> component.interactionHint = interactionHint,
+            (component) -> component.interactionHint)
         .add()
         .afterDecode(DisplaySlot::processConfig)
         .build();
