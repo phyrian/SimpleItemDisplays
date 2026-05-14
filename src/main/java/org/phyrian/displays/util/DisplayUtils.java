@@ -63,8 +63,9 @@ public class DisplayUtils {
     var blockTransform = new DisplayTransform(blockPosition, blockRotation);
     if (displayTransform != null) {
       var displayPosition = displayTransform.getPosition().clone();
+      rotationTuple.applyRotationTo(displayPosition);
+
       if (variantRotation == VariantRotation.DoublePipe && displayOrientation == DisplayOrientation.Vertical) {
-        rotationTuple.applyRotationTo(displayPosition);
         if (rotationIndex == RotationTuple.index(Rotation.None, Rotation.Ninety, Rotation.None)) {
           displayPosition.y += 0.5;
           displayPosition.z += 0.5;
@@ -81,6 +82,15 @@ public class DisplayUtils {
           displayPosition.y += 0.5;
         } else if (rotationIndex == RotationTuple.index(Rotation.None, Rotation.OneEighty, Rotation.None)) {
           displayPosition.z += 1;
+        }
+      } else if (variantRotation == VariantRotation.NESW) {
+        if (rotationIndex == RotationTuple.index(Rotation.Ninety, Rotation.None, Rotation.None)) {
+          displayPosition.z += 1;
+        } else if (rotationIndex == RotationTuple.index(Rotation.OneEighty, Rotation.None, Rotation.None)) {
+          displayPosition.x += 1;
+          displayPosition.z += 1;
+        } else if (rotationIndex == RotationTuple.index(Rotation.TwoSeventy, Rotation.None, Rotation.None)) {
+          displayPosition.x += 1;
         }
       }
 
