@@ -8,6 +8,7 @@ import org.phyrian.displays.component.ItemDisplayBlock;
 import org.phyrian.displays.event.BlockReplaceEventSystem;
 import org.phyrian.displays.event.BreakBlockEventSystem;
 import org.phyrian.displays.event.ItemDisplayBlockReplacementSystem;
+import org.phyrian.displays.event.ItemDisplayBlockStateRemovalSystem;
 import org.phyrian.displays.event.PlaceBlockEventSystem;
 import org.phyrian.displays.interaction.ChangeOrientationInteraction;
 import org.phyrian.displays.interaction.ChangeScaleInteraction;
@@ -55,6 +56,7 @@ public class SimpleItemDisplaysPlugin extends JavaPlugin {
 
     this.getChunkStoreRegistry().registerSystem(new ItemDisplayBlockReplacementSystem());
     this.getChunkStoreRegistry().registerSystem(new BlockReplaceEventSystem());
+    this.getEntityStoreRegistry().registerSystem(new ItemDisplayBlockStateRemovalSystem());
     this.getEntityStoreRegistry().registerSystem(new BreakBlockEventSystem());
     this.getEntityStoreRegistry().registerSystem(new PlaceBlockEventSystem());
 

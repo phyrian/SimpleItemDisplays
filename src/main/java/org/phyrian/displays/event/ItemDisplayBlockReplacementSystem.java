@@ -12,7 +12,6 @@ import org.phyrian.displays.config.ItemFilter;
 import org.phyrian.displays.config.ItemFilterType;
 
 import com.hypixel.hytale.component.AddReason;
-import com.hypixel.hytale.component.Archetype;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
@@ -60,7 +59,7 @@ public class ItemDisplayBlockReplacementSystem extends RefSystem<ChunkStore> {
   @Nullable
   @Override
   public Query<ChunkStore> getQuery() {
-    return Archetype.of(ItemDisplayBlock.getComponentType());
+    return ItemDisplayBlock.getComponentType();
   }
 
   private DisplaySlot[] createDisplaySlots(ItemDisplayBlock itemDisplayBlock) {
