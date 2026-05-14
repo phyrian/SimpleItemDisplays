@@ -1,4 +1,5 @@
-SimpleItemDisplays_Village_Item_Frame.name=Simple Item Frame
+SimpleItemDisplays_Display_Case_Full.name=Large Display Case
+SimpleItemDisplays_Display_Case_Half.name=Small Display Case
 
 SimpleItemDisplays_Feran_Flowerpot.name=Feran Flowerpot
 SimpleItemDisplays_Frozen_Castle_Flowerpot.name=Frozen Castle Flowerpot
@@ -9,5 +10,11 @@ SimpleItemDisplays_Temple_Dark_Flowerpot.name=Dark Temple Flowerpot
 SimpleItemDisplays_Temple_Light_Flowerpot.name=Light Temple Flowerpot
 SimpleItemDisplays_Temple_Wind_Flowerpot.name=Wind Temple Flowerpot
 SimpleItemDisplays_Village_Flowerpot.name=Clay Flowerpot
+
+SimpleItemDisplays_Village_Item_Frame.name=Simple Item Frame
+
+SimpleItemDisplays_Tavern_Balcony_Planter.name=Tavern Balcony Planter
+
+SimpleItemDisplays_Weapon_Display_Case.name=Weapon Display Case
 
 SimpleItemDisplays_Desc_Customizable.description=<b>Use a hammer to customise me!

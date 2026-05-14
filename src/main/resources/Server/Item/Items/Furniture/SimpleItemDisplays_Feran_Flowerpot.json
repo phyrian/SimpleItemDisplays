@@ -11,7 +11,7 @@
     "Material": "Solid",
     "DrawType": "Model",
     "Opacity": "Transparent",
-    "CustomModel": "Blocks/SimpleItemDisplays/Feran_Flowerpot.blockymodel",
+    "CustomModel": "Blocks/SimpleItemDisplays/Flowerpot.blockymodel",
     "CustomModelTexture": [
       {
         "Texture": "Blocks/SimpleItemDisplays/Feran_Flowerpot_Texture.png",
@@ -37,17 +37,28 @@
     },
     "BlockEntity": {
       "Components": {
-        "SimpleItemDisplays_ItemDisplayBlock": {
-          "DisplayTransform": {
-            "Position": {
-              "X": 0.5,
-              "Y": 0.5,
-              "Z": 0.5
+        "SimpleItemDisplays_DisplayContainerBlock": {
+          "DisplaySlots": [
+            {
+              "DisplayTransform": {
+                "Position": {
+                  "X": 0.5,
+                  "Y": 0.5,
+                  "Z": 0.5
+                }
+              }
             }
-          },
-          "AllowedBlockTypes": [
-            "SimpleItemDisplays_FlowerpotPlants"
-          ]
+          ],
+          "ItemFilters": [
+            {
+              "Type": "BlockType",
+              "Value": [
+                "SimpleItemDisplays_FlowerpotPlants"
+              ]
+            }
+          ],
+          "AddItemSoundEventId": "SFX_Grass_Build",
+          "RemoveItemSoundEventId": "SFX_Leaves_Break"
         }
       }
     },
@@ -67,13 +78,11 @@
     "State": {
       "Definitions": {
         "Full": {
-          "InteractionHint": "server.interactionHints.SimpleItemDisplays_removeItem",
-          "InteractionSoundEventId": "SFX_Grass_Build"
+          "InteractionHint": "server.interactionHints.SimpleItemDisplays_removeItem"
         }
       }
     },
-    "InteractionHint": "server.interactionHints.SimpleItemDisplays_addItem",
-    "InteractionSoundEventId": "SFX_Leaves_Break"
+    "InteractionHint": "server.interactionHints.SimpleItemDisplays_addOrRemoveItem"
   },
   "PlayerAnimationsId": "Block",
   "Tags": {

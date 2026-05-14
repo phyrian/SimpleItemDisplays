@@ -3,7 +3,7 @@ package org.phyrian.displays.interaction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.phyrian.displays.component.ItemDisplayBlock;
+import org.phyrian.displays.component.DisplayContainerBlock;
 
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.CommandBuffer;
@@ -12,7 +12,6 @@ import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.protocol.InteractionState;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.entity.InteractionContext;
-import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHandler;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.client.SimpleBlockInteraction;
 import com.hypixel.hytale.server.core.universe.world.World;
@@ -25,8 +24,10 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
   public static final BuilderCodec<DisplayItemInteraction> CODEC;
 
   @Override
-  protected void interactWithBlock(@Nonnull World world, @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull InteractionType type, @Nonnull InteractionContext context,
-      @Nullable ItemStack itemInHand, @Nonnull Vector3i pos, @Nonnull CooldownHandler cooldownHandler) {
+  protected void interactWithBlock(@Nonnull World world,
+      @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull InteractionType type,
+      @Nonnull InteractionContext context, @Nullable com.hypixel.hytale.server.core.inventory.ItemStack itemInHand, @Nonnull Vector3i pos,
+      @Nonnull CooldownHandler cooldownHandler) {
     var indexChunk = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
     var chunk = world.getChunk(indexChunk);
     var blockType = world.getBlockType(pos);
@@ -37,8 +38,9 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
       return;
     }
 
-    var blockItemDisplay = blockType.getBlockEntity().getComponent(ItemDisplayBlock.getComponentType());
-    if (blockItemDisplay == null) {
+    var componentType = DisplayContainerBlock.getComponentType();
+    var blockTypeDisplay = blockType.getBlockEntity().getComponent(componentType);
+    if (blockTypeDisplay == null) {
       LOGGER.atWarning().log("Failed to interact with display due to missing ItemDisplayBlock component.");
       context.getState().state = InteractionState.Failed;
       return;
@@ -46,22 +48,17 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
 
     var chunkRef = chunk.getBlockComponentEntity(pos.x, pos.y, pos.z);
     if (chunkRef == null) {
-      LOGGER.atWarning().log("Failed to interact with " + blockType.getId() + " at position " + pos + " due to missing chunk ref.");
+      LOGGER.atWarning().log("Failed to interact with " + blockType.getId() + " at position " + pos
+          + " due to missing chunk ref.");
       context.getState().state = InteractionState.Failed;
       return;
     }
 
     var chunkStore = world.getChunkStore().getStore();
-    var itemDisplay = chunkStore.getComponent(chunkRef, ItemDisplayBlock.getComponentType());
-    if (itemDisplay == null) {
-      itemDisplay = new ItemDisplayBlock(blockItemDisplay);
-      chunkStore.addComponent(chunkRef, ItemDisplayBlock.getComponentType(), itemDisplay);
-    }
-
-    var ref = context.getEntity();
-    if (itemDisplay.getAnchoredEntityId() != null) {
-      context.getState().state = InteractionState.Failed;
-      return;
+    var display = chunkStore.getComponent(chunkRef, componentType);
+    if (display == null) {
+      display = new DisplayContainerBlock(blockTypeDisplay);
+      chunkStore.addComponent(chunkRef, componentType, display);
     }
 
     if (itemInHand == null) {
@@ -69,31 +66,25 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
       return;
     }
 
-    if (!itemDisplay.canHoldItem(itemInHand.getItemId())) {
+    var itemContainer = context.getHeldItemContainer();
+    if (itemContainer == null) {
       context.getState().state = InteractionState.Failed;
       return;
     }
 
-    var itemStack = itemInHand.withQuantity(1);
-    if (itemStack == null) {
+    var ref = context.getEntity();
+    var slot = context.getHeldItemSlot();
+    if (!display.addItem(itemContainer, slot, 1, commandBuffer, ref, pos, blockType,
+        rotationIndex)) {
       context.getState().state = InteractionState.Failed;
-      return;
     }
-
-    if (context.getHeldItemContainer() != null) {
-      var transaction = context.getHeldItemContainer().removeItemStackFromSlot(context.getHeldItemSlot(), itemInHand, 1);
-      if (!transaction.succeeded()) {
-        context.getState().state = InteractionState.Failed;
-        return;
-      }
-    }
-
-    itemDisplay.addItem(commandBuffer, ref, pos, itemStack, chunk, blockType, rotationIndex);
   }
 
   @Override
-  protected void simulateInteractWithBlock(@Nonnull InteractionType type, @Nonnull InteractionContext context, @Nullable ItemStack itemInHand,
-      @Nonnull World world, @Nonnull Vector3i targetBlock) {
+  protected void simulateInteractWithBlock(@Nonnull InteractionType type,
+      @Nonnull InteractionContext context, @Nullable com.hypixel.hytale.server.core.inventory.ItemStack itemInHand, @Nonnull World world,
+      @Nonnull Vector3i targetBlock) {
+    // no-op
   }
 
   static {

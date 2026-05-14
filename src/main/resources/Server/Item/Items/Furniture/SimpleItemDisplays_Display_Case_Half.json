@@ -1,9 +1,8 @@
 {
   "TranslationProperties": {
-    "Description": "items.SimpleItemDisplays_Desc_Customizable.description",
-    "Name": "items.SimpleItemDisplays_Village_Flowerpot.name"
+    "Name": "items.SimpleItemDisplays_Display_Case_Half.name"
   },
-  "Icon": "Icons/ItemsGenerated/SimpleItemDisplays/Village_Flowerpot.png",
+  "Icon": "Icons/ItemsGenerated/SimpleItemDisplays/Display_Case_Half.png",
   "Categories": [
     "Furniture.Containers"
   ],
@@ -11,23 +10,24 @@
     "Material": "Solid",
     "DrawType": "Model",
     "Opacity": "Transparent",
-    "CustomModel": "Blocks/SimpleItemDisplays/Flowerpot.blockymodel",
+    "CustomModel": "Blocks/SimpleItemDisplays/Display_Case_Half.blockymodel",
     "CustomModelTexture": [
       {
-        "Texture": "Blocks/SimpleItemDisplays/Village_Flowerpot_Texture.png",
+        "Texture": "Blocks/SimpleItemDisplays/Display_Case_Texture.png",
         "Weight": 1
       }
     ],
-    "RandomRotation": "YawStep1",
-    "HitboxType": "SimpleItemDisplays_Flowerpot",
+    "VariantRotation": "NESW",
+    "HitboxType": "Block_Half",
     "Gathering": {
-      "Soft": {
-        "ItemId": "SimpleItemDisplays_Village_Flowerpot"
+      "Breaking": {
+        "ItemId": "SimpleItemDisplays_Display_Case_Half",
+        "GatherType": "Woods"
       }
     },
-    "BlockSoundSetId": "Clay_Pot_Small",
-    "BlockParticleSetId": "Clay",
-    "ParticleColor": "#864c36",
+    "BlockSoundSetId": "Glass",
+    "BlockParticleSetId": "Glass",
+    "ParticleColor": "#d1cfce",
     "Support": {
       "Down": [
         {
@@ -43,26 +43,18 @@
               "DisplayTransform": {
                 "Position": {
                   "X": 0.5,
-                  "Y": 0.5,
+                  "Y": 0.0625,
                   "Z": 0.5
                 }
               }
             }
           ],
-          "ItemFilters": [
-            {
-              "Type": "BlockType",
-              "Value": [
-                "SimpleItemDisplays_FlowerpotPlants"
-              ]
-            }
-          ],
-          "AddItemSoundEventId": "SFX_Grass_Build",
-          "RemoveItemSoundEventId": "SFX_Leaves_Break"
+          "AddItemSoundEventId": "SFX_Soft_Build",
+          "RemoveItemSoundEventId": "SFX_Soft_Break"
         }
       }
     },
-    "InteractionHitboxType": "SimpleItemDisplays_Flowerpot",
+    "InteractionHitboxType": "Block_Half",
     "Interactions": {
       "Use": {
         "Interactions": [
@@ -75,13 +67,6 @@
         ]
       }
     },
-    "State": {
-      "Definitions": {
-        "Full": {
-          "InteractionHint": "server.interactionHints.SimpleItemDisplays_removeItem"
-        }
-      }
-    },
     "InteractionHint": "server.interactionHints.SimpleItemDisplays_addOrRemoveItem"
   },
   "PlayerAnimationsId": "Block",
@@ -90,19 +75,19 @@
       "Furniture"
     ],
     "Family": [
-      "Village"
+      "Human"
     ]
   },
   "ItemSoundSetId": "ISS_Blocks_Wood",
   "Recipe": {
     "Input": [
       {
-        "ItemId": "Soil_Clay",
-        "Quantity": 3
+        "Quantity": 1,
+        "ResourceTypeId": "Sands"
       },
       {
-        "ItemId": "Soil_Dirt",
-        "Quantity": 1
+        "Quantity": 1,
+        "ItemId": "Wood_Hardwood_Planks_Half"
       }
     ],
     "TimeSeconds": 0,
@@ -116,5 +101,17 @@
       }
     ],
     "OutputQuantity": 1
+  },
+  "IconProperties": {
+    "Scale": 0.58823,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0,
+      -13.5
+    ]
   }
 }

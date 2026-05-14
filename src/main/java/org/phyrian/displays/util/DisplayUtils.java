@@ -42,11 +42,14 @@ import static org.phyrian.displays.SimpleItemDisplaysPlugin.LOGGER;
 
 public class DisplayUtils {
 
+  public static final float DEFAULT_SCALE = 1.0F;
+
   private DisplayUtils() {
   }
 
   // I've wasted too many hours on this, and it currently does work for most blocks.
-  public static DisplayTransform getBlockTransform(Vector3i pos, int rotationIndex, VariantRotation variantRotation, DisplayOrientation displayOrientation,
+  public static DisplayTransform getBlockTransform(Vector3i pos, int rotationIndex,
+      VariantRotation variantRotation, DisplayOrientation displayOrientation,
       DisplayTransform displayTransform) {
     var rotationTuple = RotationTuple.get(rotationIndex);
 
@@ -60,8 +63,9 @@ public class DisplayUtils {
     var blockTransform = new DisplayTransform(blockPosition, blockRotation);
     if (displayTransform != null) {
       var displayPosition = displayTransform.getPosition().clone();
+      rotationTuple.applyRotationTo(displayPosition);
+
       if (variantRotation == VariantRotation.DoublePipe && displayOrientation == DisplayOrientation.Vertical) {
-        rotationTuple.applyRotationTo(displayPosition);
         if (rotationIndex == RotationTuple.index(Rotation.None, Rotation.Ninety, Rotation.None)) {
           displayPosition.y += 0.5;
           displayPosition.z += 0.5;
@@ -79,6 +83,15 @@ public class DisplayUtils {
         } else if (rotationIndex == RotationTuple.index(Rotation.None, Rotation.OneEighty, Rotation.None)) {
           displayPosition.z += 1;
         }
+      } else if (variantRotation == VariantRotation.NESW) {
+        if (rotationIndex == RotationTuple.index(Rotation.Ninety, Rotation.None, Rotation.None)) {
+          displayPosition.z += 1;
+        } else if (rotationIndex == RotationTuple.index(Rotation.OneEighty, Rotation.None, Rotation.None)) {
+          displayPosition.x += 1;
+          displayPosition.z += 1;
+        } else if (rotationIndex == RotationTuple.index(Rotation.TwoSeventy, Rotation.None, Rotation.None)) {
+          displayPosition.x += 1;
+        }
       }
 
       blockTransform.addPosition(displayPosition);
@@ -89,20 +102,22 @@ public class DisplayUtils {
     return blockTransform;
   }
 
-  public static Holder<EntityStore> createDisplayEntity(Store<EntityStore> store, ItemStack itemStack, int rotationIndex, DisplayOrientation displayOrientation,
+  public static Holder<EntityStore> createDisplayEntity(Store<EntityStore> store,
+      ItemStack itemStack, int rotationIndex, DisplayOrientation displayOrientation,
       DisplayTransform transform, DisplayKind displayKind) {
     var holder = EntityStore.REGISTRY.newHolder();
     var displayStack = ItemUtils.copyItemStack(itemStack);
     var displayedItem = displayStack.getItem();
     var displayScale = transform.getScale();
 
-    var visualAlignmentTransform = applyVisual(holder, displayedItem, rotationIndex, displayOrientation, displayScale, displayKind);
+    var visualAlignmentTransform = applyVisual(holder, displayedItem, rotationIndex,
+        displayOrientation, displayScale, displayKind);
     transform.add(visualAlignmentTransform);
 
-    LOGGER.atInfo().log("Final transform: " + transform);
-
-    holder.addComponent(NetworkId.getComponentType(), new NetworkId(store.getExternalData().takeNextNetworkId()));
-    holder.addComponent(TransformComponent.getComponentType(), new TransformComponent(transform.getPosition(), transform.getRotation()));
+    holder.addComponent(NetworkId.getComponentType(),
+        new NetworkId(store.getExternalData().takeNextNetworkId()));
+    holder.addComponent(TransformComponent.getComponentType(),
+        new TransformComponent(transform.getPosition(), transform.getRotation()));
 
     displayStack.setOverrideDroppedItemAnimation(true);
     holder.addComponent(ItemComponent.getComponentType(), new ItemComponent(displayStack));
@@ -123,16 +138,20 @@ public class DisplayUtils {
     return holder;
   }
 
-  private static DisplayTransform applyVisual(Holder<EntityStore> holder, Item item, int rotationIndex, DisplayOrientation orientation, float scale, DisplayKind displayKind) {
+  private static DisplayTransform applyVisual(Holder<EntityStore> holder, Item item,
+      int rotationIndex, DisplayOrientation orientation, float scale, DisplayKind displayKind) {
     if (displayKind != DisplayKind.Block && displayKind != DisplayKind.Item) {
       var modelAsset = ItemUtils.getItemModel(item);
       if (modelAsset != null) {
-        holder.addComponent(ModelComponent.getComponentType(), new ModelComponent(Model.createScaledModel(modelAsset, scale)));
-        holder.addComponent(PersistentModel.getComponentType(), new PersistentModel(new ModelReference(modelAsset.getId(), scale, null, true)));
+        holder.addComponent(ModelComponent.getComponentType(),
+            new ModelComponent(Model.createScaledModel(modelAsset, scale)));
+        holder.addComponent(PersistentModel.getComponentType(),
+            new PersistentModel(new ModelReference(modelAsset.getId(), scale, null, true)));
         return centerDisplayedBlock(item, rotationIndex, orientation, scale);
       }
       if (displayKind == DisplayKind.Model) {
-        LOGGER.atWarning().log("Tried applying model display for item with no registered ModelAsset: " + item.getId());
+        LOGGER.atWarning().log("Tried applying model display for Item with missing ModelAsset: "
+            + item.getId());
       }
     }
 
@@ -144,7 +163,8 @@ public class DisplayUtils {
         return centerDisplayedBlock(item, rotationIndex, orientation, scale);
       }
       if (displayKind == DisplayKind.Block) {
-        LOGGER.atWarning().log("Tried applying block display for item with no blockType: " + item.getId());
+        LOGGER.atWarning().log("Tried applying block display for Item with missing BlockType: "
+            + item.getId());
       }
     }
 
@@ -152,10 +172,11 @@ public class DisplayUtils {
   }
 
   /**
-   * Calculate the adjustment needed for the display entity if the entity is a block. Note: this method only works for multiblock blocks where the placement starts from the
-   * front-left corner (e.g.: workbenches, tables, shallow roofs).
+   * Calculate the adjustment needed for the display entity if the entity is a block.
+   * Note: this method only works for multiblock blocks where the placement starts from the front-left corner (e.g.: workbenches, tables, shallow roofs).
    */
-  private static DisplayTransform centerDisplayedBlock(Item item, int rotationIndex, DisplayOrientation orientation, float scale) {
+  private static DisplayTransform centerDisplayedBlock(Item item, int rotationIndex,
+      DisplayOrientation orientation, float scale) {
     var translation = new Vector3d();
     var rotation = new Vector3f();
 
@@ -163,12 +184,13 @@ public class DisplayUtils {
     var rotationTuple = RotationTuple.get(rotationIndex);
 
     LOGGER.atFine().log("""
-            Aligning block: %s
-             - rotationTuple: %s
-             - orientation: %s
-             - scale: %s
-             - hitbox: %s""",
-        item.getId(), hitbox.toString(), rotationTuple, orientation.toString(), (double) scale + "");
+        Aligning block: %s
+         - rotationTuple: %s
+         - orientation: %s
+         - scale: %s
+         - hitbox: %s""",
+        item.getId(), rotationTuple.toString(), orientation.toString(), (double) scale + "",
+        hitbox.toString());
 
     if (hitbox.width() > 1.0) {
       var dx = getHorizontalAlignment(hitbox.width(), scale);
@@ -206,7 +228,8 @@ public class DisplayUtils {
     LOGGER.atFine().log("""
         Aligned block: %s
          - outPosition: %s
-         - outRotation: %s""", item.getId(), translation.toString(), rotation.toString());
+         - outRotation: %s""",
+        item.getId(), translation.toString(), rotation.toString());
 
     return new DisplayTransform(translation, rotation);
   }
@@ -214,7 +237,8 @@ public class DisplayUtils {
   /**
    * Calculate the adjustment needed for the display entity if the entity is an item.
    */
-  private static DisplayTransform centerDisplayedItem(Item item, int rotationIndex, DisplayOrientation orientation, float scale) {
+  private static DisplayTransform centerDisplayedItem(Item item, int rotationIndex,
+      DisplayOrientation orientation, float scale) {
     var translation = new Vector3d();
     var rotation = new Vector3f();
     scale *= item.getScale();
@@ -223,10 +247,10 @@ public class DisplayUtils {
     var playerAnimationsId = item.getPlayerAnimationsId();
 
     LOGGER.atFine().log("""
-            Aligning item: %s
-             - rotationTuple: %s
-             - orientation: %s
-             - scale: %s""",
+        Aligning item: %s
+         - rotationTuple: %s
+         - orientation: %s
+         - scale: %s""",
         item.getId(), rotationTuple.toString(), orientation.toString(), (double) scale + "");
 
     if (orientation == DisplayOrientation.Vertical) {
@@ -339,7 +363,8 @@ public class DisplayUtils {
         rotation.addRotationOnAxis(Axis.Z, 180);
       }
 
-      // item models are centered on the middle point of the bottom face of their hitbox, so they need to be pushed to the middle
+      // item models are centered on the middle point of the bottom face of their hitbox,
+      // so they need to be pushed to the middle
       if (rotationIndex == 8) {
         translation.y += 1d;
       } else if (rotationIndex != 0) {
@@ -350,7 +375,8 @@ public class DisplayUtils {
     LOGGER.atFine().log("""
         Aligned item: %s
          - outPosition: %s
-         - outRotation: %s""", item.getId(), translation.toString(), rotation.toString());
+         - outRotation: %s""",
+        item.getId(), translation.toString(), rotation.toString());
 
     return new DisplayTransform(translation, rotation, scale);
   }

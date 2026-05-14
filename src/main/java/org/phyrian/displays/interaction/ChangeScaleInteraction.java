@@ -1,12 +1,11 @@
 package org.phyrian.displays.interaction;
 
-import java.util.Optional;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.phyrian.displays.component.ItemDisplayBlock;
+import org.phyrian.displays.component.DisplayContainerBlock;
 import org.phyrian.displays.config.DisplayTransform;
+import org.phyrian.displays.util.DisplayUtils;
 
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.CommandBuffer;
@@ -28,8 +27,10 @@ public class ChangeScaleInteraction extends SimpleBlockInteraction {
   public static final BuilderCodec<ChangeScaleInteraction> CODEC;
 
   @Override
-  protected void interactWithBlock(@Nonnull World world, @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull InteractionType type, @Nonnull InteractionContext context,
-      @Nullable ItemStack itemInHand, @Nonnull Vector3i pos, @Nonnull CooldownHandler cooldownHandler) {
+  protected void interactWithBlock(@Nonnull World world,
+      @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull InteractionType type,
+      @Nonnull InteractionContext context, @Nullable ItemStack itemInHand, @Nonnull Vector3i pos,
+      @Nonnull CooldownHandler cooldownHandler) {
     var indexChunk = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
     var chunk = world.getChunk(indexChunk);
     var blockType = world.getBlockType(pos);
@@ -40,49 +41,47 @@ public class ChangeScaleInteraction extends SimpleBlockInteraction {
       return;
     }
 
-    var blockItemDisplay = blockType.getBlockEntity().getComponent(ItemDisplayBlock.getComponentType());
-    if (blockItemDisplay == null) {
-      LOGGER.atWarning().log("Failed to interact with display due to missing ItemDisplayBlock component.");
-      context.getState().state = InteractionState.Failed;
-      return;
-    }
-
     var chunkRef = chunk.getBlockComponentEntity(pos.x, pos.y, pos.z);
     if (chunkRef == null) {
-      LOGGER.atWarning().log("Failed to interact with " + blockType.getId() + " at position " + pos + " due to missing chunk ref.");
+      LOGGER.atWarning().log("Failed to interact with " + blockType.getId() + " at position " + pos
+          + " due to missing chunk ref.");
       context.getState().state = InteractionState.Failed;
       return;
     }
 
     var chunkStore = world.getChunkStore().getStore();
-    var itemDisplay = chunkStore.getComponent(chunkRef, ItemDisplayBlock.getComponentType());
-    if (itemDisplay == null) {
+    var display = chunkStore.getComponent(chunkRef, DisplayContainerBlock.getComponentType());
+    if (display == null) {
+      LOGGER.atWarning().log("Failed to interact with display due to missing DisplayContainerBlock"
+          + " component.");
       context.getState().state = InteractionState.Failed;
       return;
     }
 
-    var displayTransform = itemDisplay.getDisplayTransform();
-    if (itemDisplay.getDisplayTransform() == null) {
-      displayTransform = new DisplayTransform();
-      itemDisplay.setDisplayTransform(displayTransform);
+    for (var displaySlot : display.getDisplaySlots()) {
+      var displayTransform = displaySlot.getDisplayTransform();
+      if (displaySlot.getDisplayTransform() == null) {
+        displayTransform = new DisplayTransform();
+        displaySlot.setDisplayTransform(displayTransform);
+      }
+
+      float currentScale = displayTransform.getScale();
+
+      var maxScale = DisplayUtils.DEFAULT_SCALE * 2;
+      var minScale = DisplayUtils.DEFAULT_SCALE / 2;
+
+      var newScale = currentScale >= maxScale ? minScale : currentScale + minScale;
+      displayTransform.setScale(newScale);
     }
 
-    float currentScale = displayTransform.getScale();
-    float defaultScale = Optional.ofNullable(blockItemDisplay.getDisplayTransform())
-        .map(DisplayTransform::getScale)
-        .orElse(1.0f);
-
-    var maxScale = defaultScale * 2;
-    var minScale = defaultScale / 2;
-
-    var newScale = currentScale >= maxScale ? minScale : currentScale + minScale;
-    displayTransform.setScale(newScale);
-    itemDisplay.refreshDisplay(commandBuffer, context.getEntity(), pos, chunk, blockType, rotationIndex);
+    display.update(commandBuffer, pos, world, blockType, rotationIndex);
   }
 
   @Override
-  protected void simulateInteractWithBlock(@Nonnull InteractionType type, @Nonnull InteractionContext context, @Nullable ItemStack itemInHand,
-      @Nonnull World world, @Nonnull Vector3i targetBlock) {
+  protected void simulateInteractWithBlock(@Nonnull InteractionType type,
+      @Nonnull InteractionContext context, @Nullable ItemStack itemInHand, @Nonnull World world,
+      @Nonnull Vector3i targetBlock) {
+    // no-op
   }
 
   static {

@@ -1,9 +1,8 @@
 {
   "TranslationProperties": {
-    "Description": "items.SimpleItemDisplays_Desc_Customizable.description",
-    "Name": "items.SimpleItemDisplays_Village_Flowerpot.name"
+    "Name": "items.SimpleItemDisplays_Tavern_Balcony_Planter.name"
   },
-  "Icon": "Icons/ItemsGenerated/SimpleItemDisplays/Village_Flowerpot.png",
+  "Icon": "Icons/ItemsGenerated/SimpleItemDisplays/Tavern_Balcony_Planter.png",
   "Categories": [
     "Furniture.Containers"
   ],
@@ -11,25 +10,26 @@
     "Material": "Solid",
     "DrawType": "Model",
     "Opacity": "Transparent",
-    "CustomModel": "Blocks/SimpleItemDisplays/Flowerpot.blockymodel",
+    "CustomModel": "Blocks/SimpleItemDisplays/Balcony_Planter.blockymodel",
     "CustomModelTexture": [
       {
-        "Texture": "Blocks/SimpleItemDisplays/Village_Flowerpot_Texture.png",
+        "Texture": "Blocks/SimpleItemDisplays/Tavern_Balcony_Planter_Texture.png",
         "Weight": 1
       }
     ],
-    "RandomRotation": "YawStep1",
-    "HitboxType": "SimpleItemDisplays_Flowerpot",
+    "VariantRotation": "NESW",
+    "HitboxType": "SimpleItemDisplays_Balcony_Planter",
     "Gathering": {
-      "Soft": {
-        "ItemId": "SimpleItemDisplays_Village_Flowerpot"
+      "Breaking": {
+        "ItemId": "SimpleItemDisplays_Tavern_Balcony_Planter",
+        "GatherType": "Woods"
       }
     },
-    "BlockSoundSetId": "Clay_Pot_Small",
-    "BlockParticleSetId": "Clay",
-    "ParticleColor": "#864c36",
+    "BlockParticleSetId": "Wood",
+    "BlockSoundSetId": "Wood",
+    "ParticleColor": "#5b3222",
     "Support": {
-      "Down": [
+      "North": [
         {
           "FaceType": "Full"
         }
@@ -42,9 +42,18 @@
             {
               "DisplayTransform": {
                 "Position": {
-                  "X": 0.5,
-                  "Y": 0.5,
-                  "Z": 0.5
+                  "X": 0.25,
+                  "Y": 1,
+                  "Z": 0.25
+                }
+              }
+            },
+            {
+              "DisplayTransform": {
+                "Position": {
+                  "X": 0.75,
+                  "Y": 1,
+                  "Z": 0.25
                 }
               }
             }
@@ -57,12 +66,12 @@
               ]
             }
           ],
-          "AddItemSoundEventId": "SFX_Grass_Build",
-          "RemoveItemSoundEventId": "SFX_Leaves_Break"
+          "AddItemSoundEventId": "SFX_Soft_Build",
+          "RemoveItemSoundEventId": "SFX_Soft_Break"
         }
       }
     },
-    "InteractionHitboxType": "SimpleItemDisplays_Flowerpot",
+    "InteractionHitboxType": "SimpleItemDisplays_Balcony_Planter",
     "Interactions": {
       "Use": {
         "Interactions": [
@@ -75,13 +84,6 @@
         ]
       }
     },
-    "State": {
-      "Definitions": {
-        "Full": {
-          "InteractionHint": "server.interactionHints.SimpleItemDisplays_removeItem"
-        }
-      }
-    },
     "InteractionHint": "server.interactionHints.SimpleItemDisplays_addOrRemoveItem"
   },
   "PlayerAnimationsId": "Block",
@@ -90,15 +92,15 @@
       "Furniture"
     ],
     "Family": [
-      "Village"
+      "Tavern"
     ]
   },
   "ItemSoundSetId": "ISS_Blocks_Wood",
   "Recipe": {
     "Input": [
       {
-        "ItemId": "Soil_Clay",
-        "Quantity": 3
+        "ItemId": "Wood_Hardwood_Planks",
+        "Quantity": 1
       },
       {
         "ItemId": "Soil_Dirt",
@@ -116,5 +118,17 @@
       }
     ],
     "OutputQuantity": 1
+  },
+  "IconProperties": {
+    "Scale": 0.58823,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0,
+      -25
+    ]
   }
 }

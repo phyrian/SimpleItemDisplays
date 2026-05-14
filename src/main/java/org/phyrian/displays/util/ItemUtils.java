@@ -27,20 +27,23 @@ public class ItemUtils {
   private ItemUtils() {
   }
 
-  public static ItemStack pickupItem(Player playerComponent, ItemStack itemStack, Vector3d position, Store<EntityStore> componentAccessor, Ref<EntityStore> ref) {
+  public static ItemStack pickupItem(Player playerComponent, ItemStack itemStack, Vector3d position,
+      Store<EntityStore> componentAccessor, Ref<EntityStore> ref) {
     var transaction = playerComponent.giveItem(itemStack, ref, componentAccessor);
     var remainder = transaction.getRemainder();
 
     if (ItemStack.isEmpty(remainder)) {
       playerComponent.notifyPickupItem(ref, itemStack, position, componentAccessor);
-      var pickupItemHolder = ItemComponent.generatePickedUpItem(itemStack, position, componentAccessor, ref);
+      var pickupItemHolder = ItemComponent.generatePickedUpItem(itemStack, position,
+          componentAccessor, ref);
       componentAccessor.addEntity(pickupItemHolder, AddReason.SPAWN);
     } else if (!remainder.equals(itemStack)) {
       var pickedUpQuantity = itemStack.getQuantity() - remainder.getQuantity();
       var pickedUpItemStack = itemStack.withQuantity(pickedUpQuantity);
       if (pickedUpItemStack != null) {
         playerComponent.notifyPickupItem(ref, pickedUpItemStack, position, componentAccessor);
-        var pickupItemHolder = ItemComponent.generatePickedUpItem(pickedUpItemStack, position, componentAccessor, ref);
+        var pickupItemHolder = ItemComponent.generatePickedUpItem(pickedUpItemStack, position,
+            componentAccessor, ref);
         componentAccessor.addEntity(pickupItemHolder, AddReason.SPAWN);
       }
     }
@@ -48,8 +51,10 @@ public class ItemUtils {
     return remainder;
   }
 
-  public static void spawnItem(ItemStack itemStack, Vector3d position, ComponentAccessor<EntityStore> store) {
-    var holder = ItemComponent.generateItemDrop(store, itemStack, position, Vector3f.ZERO, 0.0F, 0.0F, 0.0F);
+  public static void spawnItem(ItemStack itemStack, Vector3d position,
+      ComponentAccessor<EntityStore> store) {
+    var holder = ItemComponent.generateItemDrop(store, itemStack, position, Vector3f.ZERO,
+        0.0F, 0.0F, 0.0F);
     if (holder != null) {
       var itemcomponent = holder.getComponent(ItemComponent.getComponentType());
       if (itemcomponent != null) {
@@ -81,7 +86,8 @@ public class ItemUtils {
     if (item.hasBlockType()) {
       var blockType = BlockType.getAssetMap().getAsset(item.getBlockId());
       if (blockType != null) {
-        var blockBoundingBoxes = BlockBoundingBoxes.getAssetMap().getAsset(blockType.getHitboxTypeIndex());
+        var hitboxTypeIndex = blockType.getHitboxTypeIndex();
+        var blockBoundingBoxes = BlockBoundingBoxes.getAssetMap().getAsset(hitboxTypeIndex);
         if (blockBoundingBoxes != null) {
           return blockBoundingBoxes.get(0).getBoundingBox();
         }
@@ -108,14 +114,17 @@ public class ItemUtils {
   }
 
   public static boolean isHandheld(Item item) {
-    return item.getTool() != null || item.getWeapon() != null || item.getBuilderTool() != null || Optional.ofNullable(item.getCategories())
+    return item.getTool() != null || item.getWeapon() != null || item.getBuilderTool() != null
+        || Optional.ofNullable(item.getCategories())
         .filter(categories -> Arrays.stream(categories)
-            .anyMatch(category -> "Items.Tools".equals(category) || "Items.Weapons".equals(category) || "Tool.BuilderTool".equals(category)))
+            .anyMatch(category -> "Items.Tools".equals(category) || "Items.Weapons".equals(category)
+                || "Tool.BuilderTool".equals(category)))
         .isPresent();
   }
 
   public static ItemStack copyItemStack(ItemStack itemStack) {
     //noinspection deprecation
-    return new ItemStack(itemStack.getItemId(), itemStack.getQuantity(), itemStack.getDurability(), itemStack.getMaxDurability(), itemStack.getMetadata());
+    return new ItemStack(itemStack.getItemId(), itemStack.getQuantity(), itemStack.getDurability(),
+        itemStack.getMaxDurability(), itemStack.getMetadata());
   }
 }

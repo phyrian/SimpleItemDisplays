@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
+import org.phyrian.displays.util.DisplayUtils;
+
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
@@ -11,22 +13,23 @@ import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.math.vector.Vector3i;
 
+import lombok.Data;
+
+@Data
 public class DisplayTransform {
 
   public static final Codec<DisplayTransform> CODEC;
-
-  private static final float DEFAULT_SCALE = 1.0F;
 
   private Vector3d position;
   private Vector3f rotation;
   private float scale;
 
   public DisplayTransform() {
-    this(new Vector3d(), new Vector3f(), DEFAULT_SCALE);
+    this(new Vector3d(), new Vector3f());
   }
 
-  public DisplayTransform(@Nonnull Vector3d displayPosition, @Nonnull Vector3f displayRotation) {
-    this(displayPosition, displayRotation, DEFAULT_SCALE);
+  public DisplayTransform(@Nonnull Vector3d position, @Nonnull Vector3f rotation) {
+    this(position, rotation, DisplayUtils.DEFAULT_SCALE);
   }
 
   public DisplayTransform(@Nonnull Vector3d position, @Nonnull Vector3f rotation, float scale) {
@@ -63,32 +66,6 @@ public class DisplayTransform {
   public DisplayTransform scale(float scale) {
     this.scale *= scale;
     return this;
-  }
-
-  @Nonnull
-  public Vector3d getPosition() {
-    return position;
-  }
-
-  public void setPosition(@Nonnull Vector3d position) {
-    this.position = position;
-  }
-
-  @Nonnull
-  public Vector3f getRotation() {
-    return rotation;
-  }
-
-  public void setRotation(@Nonnull Vector3f rotation) {
-    this.rotation = rotation;
-  }
-
-  public float getScale() {
-    return scale;
-  }
-
-  public void setScale(float scale) {
-    this.scale = scale;
   }
 
   @Override
@@ -136,7 +113,7 @@ public class DisplayTransform {
             (component) -> component.rotation.scale((float) Math.toDegrees(1)).toVector3d().toVector3i())
         .add()
         .append(new KeyedCodec<>("Scale", Codec.FLOAT),
-            (component, scale) -> component.scale = Objects.requireNonNullElse(scale, DEFAULT_SCALE),
+            (component, scale) -> component.scale = Objects.requireNonNullElse(scale, DisplayUtils.DEFAULT_SCALE),
             (component) -> component.scale)
         .add()
         .build();

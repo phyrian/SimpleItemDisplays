@@ -3,7 +3,7 @@ package org.phyrian.displays.interaction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.phyrian.displays.component.ItemDisplayBlock;
+import org.phyrian.displays.component.DisplayContainerBlock;
 
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.CommandBuffer;
@@ -25,46 +25,45 @@ public class RemoveItemInteraction extends SimpleBlockInteraction {
   public static final BuilderCodec<RemoveItemInteraction> CODEC;
 
   @Override
-  protected void interactWithBlock(@Nonnull World world, @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull InteractionType type, @Nonnull InteractionContext context,
-      @Nullable ItemStack itemInHand, @Nonnull Vector3i pos, @Nonnull CooldownHandler cooldownHandler) {
+  protected void interactWithBlock(@Nonnull World world,
+      @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull InteractionType type,
+      @Nonnull InteractionContext context, @Nullable ItemStack itemInHand, @Nonnull Vector3i pos,
+      @Nonnull CooldownHandler cooldownHandler) {
     var indexChunk = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
     var chunk = world.getChunk(indexChunk);
     var blockType = world.getBlockType(pos);
-    var rotationIndex = world.getBlockRotationIndex(pos.x, pos.y, pos.z);
 
     if (blockType == null || chunk == null) {
       context.getState().state = InteractionState.Failed;
       return;
     }
 
-    var blockItemDisplay = blockType.getBlockEntity().getComponent(ItemDisplayBlock.getComponentType());
-    if (blockItemDisplay == null) {
-      LOGGER.atWarning().log("Failed to interact with display due to missing ItemDisplayBlock component.");
-      context.getState().state = InteractionState.Failed;
-      return;
-    }
-
     var chunkRef = chunk.getBlockComponentEntity(pos.x, pos.y, pos.z);
     if (chunkRef == null) {
-      LOGGER.atWarning().log("Failed to interact with " + blockType.getId() + " at position " + pos + " due to missing chunk ref.");
+      LOGGER.atWarning().log("Failed to interact with " + blockType.getId() + " at position " + pos
+          + " due to missing chunk ref.");
       context.getState().state = InteractionState.Failed;
       return;
     }
 
     var chunkStore = world.getChunkStore().getStore();
-    var itemDisplay = chunkStore.getComponent(chunkRef, ItemDisplayBlock.getComponentType());
-    if (itemDisplay == null) {
+    var display = chunkStore.getComponent(chunkRef, DisplayContainerBlock.getComponentType());
+    if (display == null) {
+      LOGGER.atWarning().log("Failed to interact with display due to missing DisplayContainerBlock"
+          + " component.");
       context.getState().state = InteractionState.Failed;
       return;
     }
 
     var ref = context.getEntity();
-    itemDisplay.removeItem(commandBuffer, ref, pos, chunk, blockType, rotationIndex);
+    display.removeLastItem(commandBuffer, ref, pos, world);
   }
 
   @Override
-  protected void simulateInteractWithBlock(@Nonnull InteractionType type, @Nonnull InteractionContext context, @Nullable ItemStack itemInHand,
-      @Nonnull World world, @Nonnull Vector3i targetBlock) {
+  protected void simulateInteractWithBlock(@Nonnull InteractionType type,
+      @Nonnull InteractionContext context, @Nullable ItemStack itemInHand, @Nonnull World world,
+      @Nonnull Vector3i targetBlock) {
+    // no-op
   }
 
   static {

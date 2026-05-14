@@ -1,32 +1,64 @@
 {
   "TranslationProperties": {
-    "Name": "items.SimpleItemDisplays_Village_Item_Frame.name"
+    "Name": "items.SimpleItemDisplays_Weapon_Display_Case.name"
   },
-  "Icon": "Icons/ItemsGenerated/SimpleItemDisplays/Village_Item_Frame.png",
   "Categories": [
     "Furniture.Containers"
   ],
+  "IconProperties": {
+    "Scale": 0.305,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0,
+      -39.6
+    ]
+  },
   "BlockType": {
     "Material": "Solid",
     "DrawType": "Model",
     "Opacity": "Transparent",
-    "CustomModel": "Blocks/SimpleItemDisplays/Item_Frame.blockymodel",
+    "CustomModel": "Blocks/SimpleItemDisplays/Weapon_Display_Case.blockymodel",
     "CustomModelTexture": [
       {
-        "Texture": "Blocks/SimpleItemDisplays/Village_Item_Frame_Texture.png",
+        "Texture": "Blocks/SimpleItemDisplays/Weapon_Display_Case_Texture.png",
         "Weight": 1
       }
     ],
-    "VariantRotation": "DoublePipe",
-    "HitboxType": "SimpleItemDisplays_Item_Frame",
+    "VariantRotation": "NESW",
+    "HitboxType": "SimpleItemDisplays_Shelf_Tall",
     "Gathering": {
-      "Soft": {
-        "ItemId": "SimpleItemDisplays_Village_Item_Frame"
+      "Breaking": {
+        "ItemId": "SimpleItemDisplays_Weapon_Display_Case",
+        "GatherType": "Woods"
       }
     },
-    "BlockParticleSetId": "Wood",
-    "BlockSoundSetId": "Wood",
-    "ParticleColor": "#5b3222",
+    "BlockSoundSetId": "Glass",
+    "BlockParticleSetId": "Glass",
+    "ParticleColor": "#d1cfce",
+    "SupportsRequiredFor": "Any",
+    "Support": {
+      "North": [
+        {
+          "FaceType": "Full"
+        }
+      ],
+      "Down": [
+        {
+          "FaceType": "Full"
+        }
+      ]
+    },
+    "Supporting": {
+      "Up": [
+        {
+          "FaceType": "Full"
+        }
+      ]
+    },
     "BlockEntity": {
       "Components": {
         "SimpleItemDisplays_DisplayContainerBlock": {
@@ -35,12 +67,17 @@
               "DisplayTransform": {
                 "Position": {
                   "X": 0.5,
-                  "Y": 0.1,
-                  "Z": 0.5
+                  "Y": 0.25,
+                  "Z": 0.25
                 },
-                "Scale": 0.6
+                "Rotation": {
+                  "X": 0,
+                  "Y": 90,
+                  "Z": 0
+                },
+                "Scale": 0.75
               },
-              "DisplayOrientation": "Vertical"
+              "DisplayOrientation": "Horizontal"
             }
           ],
           "AddItemSoundEventId": "SFX_Soft_Build",
@@ -48,7 +85,6 @@
         }
       }
     },
-    "InteractionHitboxType": "SimpleItemDisplays_Item_Frame",
     "Interactions": {
       "Use": {
         "Interactions": [
@@ -59,13 +95,6 @@
             "Failed": "SimpleItemDisplays_Remove_Item"
           }
         ]
-      }
-    },
-    "State": {
-      "Definitions": {
-        "Full": {
-          "InteractionHint": "server.interactionHints.SimpleItemDisplays_removeItem"
-        }
       }
     },
     "InteractionHint": "server.interactionHints.SimpleItemDisplays_addOrRemoveItem"
@@ -83,12 +112,12 @@
   "Recipe": {
     "Input": [
       {
-        "ItemId": "Ingredient_Leather_Medium",
-        "Quantity": 1
+        "Quantity": 2,
+        "ResourceTypeId": "Sands"
       },
       {
-        "ItemId": "Ingredient_Stick",
-        "Quantity": 4
+        "Quantity": 2,
+        "ItemId": "Wood_Hardwood_Planks"
       }
     ],
     "TimeSeconds": 0,
@@ -102,5 +131,6 @@
       }
     ],
     "OutputQuantity": 1
-  }
+  },
+  "Icon": "Icons/ItemsGenerated/SimpleItemDisplays/Weapon_Display_Case.png"
 }
