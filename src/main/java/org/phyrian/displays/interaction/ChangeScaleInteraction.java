@@ -3,6 +3,7 @@ package org.phyrian.displays.interaction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.joml.Vector3i;
 import org.phyrian.displays.component.DisplayContainerBlock;
 import org.phyrian.displays.config.DisplayTransform;
 import org.phyrian.displays.util.DisplayUtils;
@@ -10,7 +11,6 @@ import org.phyrian.displays.util.DisplayUtils;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.math.util.ChunkUtil;
-import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.protocol.InteractionState;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.entity.InteractionContext;

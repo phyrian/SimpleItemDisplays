@@ -3,10 +3,11 @@ package org.phyrian.displays.util;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.joml.Vector3i;
+
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.math.util.ChunkUtil;
-import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.modules.block.BlockModule;
 import com.hypixel.hytale.server.core.universe.world.SoundUtil;
@@ -89,7 +90,7 @@ public class BlockUtils {
 
     if (chunk.getBlock(pos) != 0) {
       //noinspection DataFlowIssue
-      chunk.setBlock(pos.getX(), pos.getY(), pos.getZ(), newBlockId, newBlockType, rotation, 0,
+      chunk.setBlock(pos.x(), pos.y(), pos.z(), newBlockId, newBlockType, rotation, 0,
           settings);
     }
 
