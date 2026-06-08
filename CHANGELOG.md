@@ -1,3 +1,9 @@
+# 0.3.1
+This is a small one, since I'm already super delayed on the compatibility update for the new release version.
+
+- Updated the mod to release version 5
+- Additionally, included Sigyn's updated textures for his Display and Weapon Case models
+
 # 0.3.0
 Sorry for the long wait, and thank you all for your patience!
 
