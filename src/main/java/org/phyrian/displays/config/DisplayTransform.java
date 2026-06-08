@@ -4,14 +4,19 @@ import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
+import org.joml.RoundingMode;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.phyrian.displays.util.DisplayUtils;
 
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
-import com.hypixel.hytale.math.vector.Vector3d;
-import com.hypixel.hytale.math.vector.Vector3f;
-import com.hypixel.hytale.math.vector.Vector3i;
+import com.hypixel.hytale.math.vector.Rotation3f;
+import com.hypixel.hytale.math.vector.Rotation3fc;
+import com.hypixel.hytale.math.vector.Vector3dUtil;
+import com.hypixel.hytale.math.vector.Vector3iUtil;
 
 import lombok.Data;
 
@@ -21,31 +26,35 @@ public class DisplayTransform {
   public static final Codec<DisplayTransform> CODEC;
 
   private Vector3d position;
-  private Vector3f rotation;
+  private Rotation3fc rotation;
   private float scale;
 
   public DisplayTransform() {
-    this(new Vector3d(), new Vector3f());
+    this(new Vector3d(), new Rotation3f());
   }
 
-  public DisplayTransform(@Nonnull Vector3d position, @Nonnull Vector3f rotation) {
+  public DisplayTransform(@Nonnull Vector3d position, @Nonnull Rotation3fc rotation) {
     this(position, rotation, DisplayUtils.DEFAULT_SCALE);
   }
 
-  public DisplayTransform(@Nonnull Vector3d position, @Nonnull Vector3f rotation, float scale) {
+  public DisplayTransform(@Nonnull Vector3d position, @Nonnull Rotation3fc rotation, float scale) {
     this.position = position;
     this.rotation = rotation;
     this.scale = scale;
   }
 
   public DisplayTransform(DisplayTransform other) {
-    this(other.position.clone(), other.rotation.clone(), other.scale);
+    this(new Vector3d(other.position), new Rotation3f(other.rotation), other.scale);
   }
 
   @Nonnull
   public DisplayTransform add(@Nonnull DisplayTransform other) {
     this.position.add(other.position);
-    this.rotation.add(other.rotation);
+    this.rotation = new Rotation3f(
+        this.rotation.x() + other.rotation.x(),
+        this.rotation.y() + other.rotation.y(),
+        this.rotation.z() + other.rotation.z()
+    );
     this.scale *= other.scale;
     return this;
   }
@@ -57,8 +66,12 @@ public class DisplayTransform {
   }
 
   @Nonnull
-  public DisplayTransform addRotation(@Nonnull Vector3f rotation) {
-    this.rotation.add(rotation);
+  public DisplayTransform addRotation(@Nonnull Rotation3fc rotation) {
+    this.rotation = new Rotation3f(
+        this.rotation.x() + rotation.x(),
+        this.rotation.y() + rotation.y(),
+        this.rotation.z() + rotation.z()
+    );
     return this;
   }
 
@@ -102,15 +115,23 @@ public class DisplayTransform {
 
   static {
     CODEC = BuilderCodec.builder(DisplayTransform.class, DisplayTransform::new)
-        .append(new KeyedCodec<>("Position", Vector3d.CODEC),
+        .append(new KeyedCodec<>("Position", Vector3dUtil.CODEC),
             (component, position) -> component.position = Objects.requireNonNullElseGet(position, Vector3d::new),
             (component) -> component.position)
         .add()
-        .append(new KeyedCodec<>("Rotation", Vector3i.CODEC),
+        .append(new KeyedCodec<>("Rotation", Vector3iUtil.CODEC),
             (component, rotation) -> component.rotation = rotation != null
-                ? rotation.toVector3f().scale((float) Math.toRadians(1))
-                : new Vector3f(),
-            (component) -> component.rotation.scale((float) Math.toDegrees(1)).toVector3d().toVector3i())
+                ? new Rotation3f(
+                    rotation.x * (float) Math.toRadians(1),
+                    rotation.y * (float) Math.toRadians(1),
+                    rotation.z * (float) Math.toRadians(1)
+                  )
+                : new Rotation3f(),
+            (component) -> new Vector3f(
+                component.rotation.x() * (float) Math.toDegrees(1),
+                component.rotation.y() * (float) Math.toDegrees(1),
+                component.rotation.z() * (float) Math.toDegrees(1)
+            ).get(RoundingMode.HALF_EVEN, new Vector3i()))
         .add()
         .append(new KeyedCodec<>("Scale", Codec.FLOAT),
             (component, scale) -> component.scale = Objects.requireNonNullElse(scale, DisplayUtils.DEFAULT_SCALE),

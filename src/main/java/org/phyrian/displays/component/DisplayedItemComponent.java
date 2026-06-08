@@ -1,5 +1,7 @@
 package org.phyrian.displays.component;
 
+import org.joml.Vector3d;
+import org.joml.Vector3i;
 import org.phyrian.displays.util.ItemUtils;
 
 import com.hypixel.hytale.codec.KeyedCodec;
@@ -8,8 +10,8 @@ import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.math.vector.Vector3d;
-import com.hypixel.hytale.math.vector.Vector3i;
+import com.hypixel.hytale.math.vector.Vector3dUtil;
+import com.hypixel.hytale.math.vector.Vector3iUtil;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -76,12 +78,12 @@ public class DisplayedItemComponent implements Component<EntityStore> {
             (component) -> component.itemStack
         )
         .add()
-        .append(new KeyedCodec<>("DisplayPosition", Vector3i.CODEC),
+        .append(new KeyedCodec<>("DisplayPosition", Vector3iUtil.CODEC),
             (component, displayPosition) -> component.displayPosition = displayPosition,
             (component) -> component.displayPosition
         )
         .add()
-        .append(new KeyedCodec<>("DropPosition", Vector3d.CODEC),
+        .append(new KeyedCodec<>("DropPosition", Vector3dUtil.CODEC),
             (component, dropPosition) -> component.dropPosition = dropPosition,
             (component) -> component.dropPosition
         )

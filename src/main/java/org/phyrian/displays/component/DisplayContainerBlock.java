@@ -3,6 +3,7 @@ package org.phyrian.displays.component;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.joml.Vector3i;
 import org.phyrian.displays.config.DisplaySlot;
 import org.phyrian.displays.config.ItemFilter;
 
@@ -14,7 +15,6 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Ref;
-import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.inventory.container.ItemContainer;

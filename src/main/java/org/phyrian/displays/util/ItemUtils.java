@@ -6,13 +6,14 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.joml.Vector3d;
+
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.shape.Box;
-import com.hypixel.hytale.math.vector.Vector3d;
-import com.hypixel.hytale.math.vector.Vector3f;
+import com.hypixel.hytale.math.vector.Rotation3f;
 import com.hypixel.hytale.server.core.asset.type.blockhitbox.BlockBoundingBoxes;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.item.config.Item;
@@ -53,7 +54,7 @@ public class ItemUtils {
 
   public static void spawnItem(ItemStack itemStack, Vector3d position,
       ComponentAccessor<EntityStore> store) {
-    var holder = ItemComponent.generateItemDrop(store, itemStack, position, Vector3f.ZERO,
+    var holder = ItemComponent.generateItemDrop(store, itemStack, position, Rotation3f.ZERO,
         0.0F, 0.0F, 0.0F);
     if (holder != null) {
       var itemcomponent = holder.getComponent(ItemComponent.getComponentType());

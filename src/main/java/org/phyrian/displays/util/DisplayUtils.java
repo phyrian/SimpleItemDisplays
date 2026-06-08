@@ -2,6 +2,8 @@ package org.phyrian.displays.util;
 
 import java.util.Objects;
 
+import org.joml.Vector3d;
+import org.joml.Vector3i;
 import org.phyrian.displays.config.DisplayKind;
 import org.phyrian.displays.config.DisplayOrientation;
 import org.phyrian.displays.config.DisplayTransform;
@@ -10,9 +12,7 @@ import com.hypixel.hytale.component.Holder;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.Axis;
 import com.hypixel.hytale.math.shape.Box;
-import com.hypixel.hytale.math.vector.Vector3d;
-import com.hypixel.hytale.math.vector.Vector3f;
-import com.hypixel.hytale.math.vector.Vector3i;
+import com.hypixel.hytale.math.vector.Rotation3f;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.Rotation;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.RotationTuple;
@@ -54,15 +54,15 @@ public class DisplayUtils {
     var rotationTuple = RotationTuple.get(rotationIndex);
 
     var blockPosition = new Vector3d(pos.x, pos.y, pos.z);
-    var blockRotation = new Vector3d(
-        rotationTuple.pitch().getRadians(),
-        rotationTuple.yaw().getRadians(),
-        rotationTuple.roll().getRadians()
-    ).toVector3f();
+    var blockRotation = new Rotation3f(
+        (float) rotationTuple.pitch().getRadians(),
+        (float) rotationTuple.yaw().getRadians(),
+        (float) rotationTuple.roll().getRadians()
+    );
 
     var blockTransform = new DisplayTransform(blockPosition, blockRotation);
     if (displayTransform != null) {
-      var displayPosition = displayTransform.getPosition().clone();
+      var displayPosition = new Vector3d(displayTransform.getPosition());
       rotationTuple.applyRotationTo(displayPosition);
 
       if (variantRotation == VariantRotation.DoublePipe && displayOrientation == DisplayOrientation.Vertical) {
@@ -178,7 +178,7 @@ public class DisplayUtils {
   private static DisplayTransform centerDisplayedBlock(Item item, int rotationIndex,
       DisplayOrientation orientation, float scale) {
     var translation = new Vector3d();
-    var rotation = new Vector3f();
+    var rotation = new Rotation3f();
 
     var hitbox = Objects.requireNonNullElse(ItemUtils.getItemHitbox(item), Box.UNIT);
     var rotationTuple = RotationTuple.get(rotationIndex);
@@ -240,7 +240,7 @@ public class DisplayUtils {
   private static DisplayTransform centerDisplayedItem(Item item, int rotationIndex,
       DisplayOrientation orientation, float scale) {
     var translation = new Vector3d();
-    var rotation = new Vector3f();
+    var rotation = new Rotation3f();
     scale *= item.getScale();
 
     var rotationTuple = RotationTuple.get(rotationIndex);
