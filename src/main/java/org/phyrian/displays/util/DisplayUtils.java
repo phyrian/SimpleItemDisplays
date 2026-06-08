@@ -3,7 +3,6 @@ package org.phyrian.displays.util;
 import java.util.Objects;
 
 import org.joml.Vector3d;
-import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.phyrian.displays.config.DisplayKind;
 import org.phyrian.displays.config.DisplayOrientation;
@@ -11,6 +10,7 @@ import org.phyrian.displays.config.DisplayTransform;
 
 import com.hypixel.hytale.component.Holder;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.math.Axis;
 import com.hypixel.hytale.math.shape.Box;
 import com.hypixel.hytale.math.vector.Rotation3f;
 import com.hypixel.hytale.protocol.InteractionType;
@@ -178,7 +178,7 @@ public class DisplayUtils {
   private static DisplayTransform centerDisplayedBlock(Item item, int rotationIndex,
       DisplayOrientation orientation, float scale) {
     var translation = new Vector3d();
-    var rotation = new Vector3f();
+    var rotation = new Rotation3f();
 
     var hitbox = Objects.requireNonNullElse(ItemUtils.getItemHitbox(item), Box.UNIT);
     var rotationTuple = RotationTuple.get(rotationIndex);
@@ -201,7 +201,7 @@ public class DisplayUtils {
     if (hitbox.depth() > hitbox.width()) {
       var dx = getHorizontalAlignment(hitbox.depth(), scale);
       translation.add(rotationTuple.rotatedVector(new Vector3d(-dx, 0, 0)));
-      rotation.rotateY(-90);
+      rotation.addRotationOnAxis(Axis.Y, -90);
       rotated = true;
     }
 
@@ -211,17 +211,17 @@ public class DisplayUtils {
       translation.add(rotationTuple.rotatedVector(new Vector3d(0, -0.5, dz)));
       if (rotationIndex % 8 == 0) {
         if (rotated) {
-          rotation.rotateZ(-90);
+          rotation.addRotationOnAxis(Axis.Z, -90);
           if (rotationIndex == 0) {
-            rotation.rotateY(180);
+            rotation.addRotationOnAxis(Axis.Y, 180);
           }
         } else {
-          rotation.rotateX(90);
-          rotation.rotateY(180);
+          rotation.addRotationOnAxis(Axis.X, 90);
+          rotation.addRotationOnAxis(Axis.Y, 180);
         }
       } else {
-        rotation.rotateX(-90);
-        rotation.rotateY(180);
+        rotation.addRotationOnAxis(Axis.X, -90);
+        rotation.addRotationOnAxis(Axis.Y, 180);
       }
     }
 
@@ -231,7 +231,7 @@ public class DisplayUtils {
          - outRotation: %s""",
         item.getId(), translation.toString(), rotation.toString());
 
-    return new DisplayTransform(translation, new Rotation3f(rotation.x, rotation.y, rotation.z));
+    return new DisplayTransform(translation, rotation);
   }
 
   /**
@@ -240,7 +240,7 @@ public class DisplayUtils {
   private static DisplayTransform centerDisplayedItem(Item item, int rotationIndex,
       DisplayOrientation orientation, float scale) {
     var translation = new Vector3d();
-    var rotation = new Vector3f();
+    var rotation = new Rotation3f();
     scale *= item.getScale();
 
     var rotationTuple = RotationTuple.get(rotationIndex);
@@ -256,23 +256,23 @@ public class DisplayUtils {
     if (orientation == DisplayOrientation.Vertical) {
       if ("Block".equals(playerAnimationsId)) {
         // items held as blocks: mostly armor pieces
-        rotation.rotateY(180);
+        rotation.addRotationOnAxis(Axis.Y, 180);
         if (rotationIndex % 8 == 0) {
-          rotation.rotateX(90);
+          rotation.addRotationOnAxis(Axis.X, 90);
         } else {
-          rotation.rotateX(-90);
+          rotation.addRotationOnAxis(Axis.X, -90);
         }
 
       } else if (item.getGlider() != null) {
         var dx = (double) scale * 0.25;
         translation.add(rotationTuple.rotatedVector(new Vector3d(-dx, 0, 0)));
 
-        rotation.rotateY(180);
+        rotation.addRotationOnAxis(Axis.Y, 180);
         if (rotationIndex % 8 == 0) {
-          rotation.rotateZ(-90);
+          rotation.addRotationOnAxis(Axis.Z, -90);
         } else {
-          rotation.rotateY(-90);
-          rotation.rotateX(180);
+          rotation.addRotationOnAxis(Axis.Y, -90);
+          rotation.addRotationOnAxis(Axis.X, 180);
         }
 
       } else if (ItemUtils.isHandheld(item)) {
@@ -310,57 +310,57 @@ public class DisplayUtils {
           translation.add(rotationTuple.rotatedVector(new Vector3d(-dxz, 0, dxz)));
         }
 
-        rotation.rotateY(-90);
+        rotation.addRotationOnAxis(Axis.Y, -90);
         if (rotationIndex == 0) {
           if (!standing) {
-            rotation.rotateZ(90);
+            rotation.addRotationOnAxis(Axis.Z, 90);
           }
 
           if (mirror45) {
-            rotation.rotateY(45);
+            rotation.addRotationOnAxis(Axis.Y, 45);
           } else {
-            rotation.rotateY(-45);
+            rotation.addRotationOnAxis(Axis.Y, -45);
           }
 
           if (flipX) {
-            rotation.rotateX(180);
+            rotation.addRotationOnAxis(Axis.X, 180);
           }
         } else if (rotationIndex == 8) {
           if (standing) {
-            rotation.rotateZ(180);
+            rotation.addRotationOnAxis(Axis.Z, 180);
           } else {
-            rotation.rotateZ(-90);
+            rotation.addRotationOnAxis(Axis.Z, -90);
           }
 
           if (mirror45) {
-            rotation.rotateY(-45);
+            rotation.addRotationOnAxis(Axis.Y, -45);
           } else {
-            rotation.rotateY(45);
+            rotation.addRotationOnAxis(Axis.Y, 45);
           }
 
           if (!flipX) {
-            rotation.rotateX(180);
+            rotation.addRotationOnAxis(Axis.X, 180);
           }
         } else {
           if (standing) {
-            rotation.rotateZ(-90);
+            rotation.addRotationOnAxis(Axis.Z, -90);
           }
 
           if (mirror45) {
-            rotation.rotateX(45);
+            rotation.addRotationOnAxis(Axis.X, 45);
           } else {
-            rotation.rotateX(-45);
+            rotation.addRotationOnAxis(Axis.X, -45);
           }
 
           if (flipX) {
-            rotation.rotateY(180);
+            rotation.addRotationOnAxis(Axis.Y, 180);
           } else {
-            rotation.rotateX(-90);
+            rotation.addRotationOnAxis(Axis.X, -90);
           }
         }
       } else {
-        rotation.rotateX(180);
-        rotation.rotateZ(180);
+        rotation.addRotationOnAxis(Axis.X, 180);
+        rotation.addRotationOnAxis(Axis.Z, 180);
       }
 
       // item models are centered on the middle point of the bottom face of their hitbox,
@@ -378,8 +378,7 @@ public class DisplayUtils {
          - outRotation: %s""",
         item.getId(), translation.toString(), rotation.toString());
 
-    return new DisplayTransform(translation, new Rotation3f(rotation.x, rotation.y, rotation.z),
-        scale);
+    return new DisplayTransform(translation, rotation, scale);
   }
 
   private static double getHorizontalAlignment(double length, float scale) {
