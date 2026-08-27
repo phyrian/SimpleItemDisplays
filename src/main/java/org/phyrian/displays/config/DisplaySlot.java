@@ -163,9 +163,9 @@ public class DisplaySlot {
     }
 
     commandBuffer.run((store) -> {
-      var component = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
-      if (component != null) {
-        component.dropItem(store, ref);
+      var displayedItem = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
+      if (displayedItem != null) {
+        displayedItem.dropItem(store, ref);
       }
 
       store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
@@ -197,13 +197,12 @@ public class DisplaySlot {
         displayOrientation, displayTransform);
 
     commandBuffer.run((store) -> {
-      var component = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
-
-      if (component == null) {
+      var displayedItem = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
+      if (displayedItem == null) {
         return;
       }
 
-      var itemStack = component.getItemStack();
+      var itemStack = displayedItem.getItemStack();
 
       // remove previous display entity after retrieving itemStack
       store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
@@ -234,9 +233,9 @@ public class DisplaySlot {
     }
 
     commandBuffer.run((store) -> {
-      var display = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
-      if (display != null) {
-        display.dropItem(store);
+      var displayedItem = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
+      if (displayedItem != null) {
+        displayedItem.dropItem(store);
       }
 
       store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
