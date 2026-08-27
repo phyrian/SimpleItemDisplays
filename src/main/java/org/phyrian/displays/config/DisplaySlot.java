@@ -14,9 +14,9 @@ import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.codec.codecs.EnumCodec;
 import com.hypixel.hytale.codec.codecs.array.ArrayCodec;
 import com.hypixel.hytale.component.AddReason;
-import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
+import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.asset.type.blockhitbox.BlockBoundingBoxes;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
@@ -99,7 +99,7 @@ public class DisplaySlot {
   }
 
   public boolean addItem(ItemContainer itemContainer, byte slot, int amount,
-      CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref, Vector3i pos,
+      Store<EntityStore> store, Ref<EntityStore> ref, Vector3i pos,
       BlockType blockType, int rotationIndex) {
     if (anchoredEntityId != null) {
       return false;
@@ -129,28 +129,26 @@ public class DisplaySlot {
     var blockTransform = DisplayUtils.getBlockTransform(pos, rotationIndex, variantRotation,
         displayOrientation, displayTransform);
 
-    commandBuffer.run((store) -> {
-      var uuid = UUID.randomUUID();
-      var holder = DisplayUtils.createDisplayEntity(store, takenItemStack, rotationIndex,
-          displayOrientation, blockTransform, displayKind);
+    var uuid = UUID.randomUUID();
+    var holder = DisplayUtils.createDisplayEntity(store, takenItemStack, rotationIndex,
+        displayOrientation, blockTransform, displayKind);
 
-      holder.putComponent(UUIDComponent.getComponentType(), new UUIDComponent(uuid));
-      holder.putComponent(DisplayedItemComponent.getComponentType(),
-          new DisplayedItemComponent(takenItemStack, pos, blockTransform.getPosition()));
+    holder.putComponent(UUIDComponent.getComponentType(), new UUIDComponent(uuid));
+    holder.putComponent(DisplayedItemComponent.getComponentType(),
+        new DisplayedItemComponent(takenItemStack, pos, blockTransform.getPosition()));
 
-      store.addEntity(holder, AddReason.SPAWN);
-      this.setAnchoredEntityId(uuid);
+    store.addEntity(holder, AddReason.SPAWN);
+    this.setAnchoredEntityId(uuid);
 
-      if (addItemSoundEventIndex != 0) {
-        SoundUtil.playSoundEvent3d(ref, addItemSoundEventIndex, (double) pos.x + (double) 0.5F,
-            (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, commandBuffer);
-      }
-    });
+    if (addItemSoundEventIndex != 0) {
+      SoundUtil.playSoundEvent3d(ref, addItemSoundEventIndex, (double) pos.x + (double) 0.5F,
+          (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, store);
+    }
 
     return true;
   }
 
-  public boolean removeItem(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref,
+  public boolean removeItem(Store<EntityStore> store, Ref<EntityStore> ref,
       Vector3i pos, World world) {
     var anchoredEntity = EntityUtils.getEntity(world, anchoredEntityId);
     if (anchoredEntity == null) {
@@ -162,25 +160,23 @@ public class DisplaySlot {
       return false;
     }
 
-    commandBuffer.run((store) -> {
-      var displayedItem = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
-      if (displayedItem != null) {
-        displayedItem.dropItem(store, ref);
-      }
+    var displayedItem = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
+    if (displayedItem != null) {
+      displayedItem.dropItem(store, ref);
+    }
 
-      store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
-      this.setAnchoredEntityId(null);
+    store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
+    this.setAnchoredEntityId(null);
 
-      if (removeItemSoundEventIndex != 0) {
-        SoundUtil.playSoundEvent3d(ref, removeItemSoundEventIndex, (double) pos.x + (double) 0.5F,
-            (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, commandBuffer);
-      }
-    });
+    if (removeItemSoundEventIndex != 0) {
+      SoundUtil.playSoundEvent3d(ref, removeItemSoundEventIndex, (double) pos.x + (double) 0.5F,
+          (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, store);
+    }
 
     return true;
   }
 
-  public void update(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, World world,
+  public void update(Store<EntityStore> store, Vector3i pos, World world,
       BlockType blockType, int rotationIndex) {
     var anchoredEntity = EntityUtils.getEntity(world, anchoredEntityId);
     if (anchoredEntity == null) {
@@ -196,32 +192,30 @@ public class DisplaySlot {
     var blockTransform = DisplayUtils.getBlockTransform(pos, rotationIndex, variantRotation,
         displayOrientation, displayTransform);
 
-    commandBuffer.run((store) -> {
-      var displayedItem = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
-      if (displayedItem == null) {
-        return;
-      }
+    var displayedItem = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
+    if (displayedItem == null) {
+      return;
+    }
 
-      var itemStack = displayedItem.getItemStack();
+    var itemStack = displayedItem.getItemStack();
 
-      // remove previous display entity after retrieving itemStack
-      store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
-      this.setAnchoredEntityId(null);
+    // remove previous display entity after retrieving itemStack
+    store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
+    this.setAnchoredEntityId(null);
 
-      var uuid = UUID.randomUUID();
-      var newComponent = new DisplayedItemComponent(itemStack, pos, blockTransform.getPosition());
+    var uuid = UUID.randomUUID();
+    var newComponent = new DisplayedItemComponent(itemStack, pos, blockTransform.getPosition());
 
-      var holder = DisplayUtils.createDisplayEntity(store, itemStack, rotationIndex,
-          displayOrientation, blockTransform, displayKind);
-      holder.putComponent(UUIDComponent.getComponentType(), new UUIDComponent(uuid));
-      holder.putComponent(DisplayedItemComponent.getComponentType(), newComponent);
-      store.addEntity(holder, AddReason.SPAWN);
+    var holder = DisplayUtils.createDisplayEntity(store, itemStack, rotationIndex,
+        displayOrientation, blockTransform, displayKind);
+    holder.putComponent(UUIDComponent.getComponentType(), new UUIDComponent(uuid));
+    holder.putComponent(DisplayedItemComponent.getComponentType(), newComponent);
+    store.addEntity(holder, AddReason.SPAWN);
 
-      this.setAnchoredEntityId(uuid);
-    });
+    this.setAnchoredEntityId(uuid);
   }
 
-  public void onDestroy(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, World world) {
+  public void onDestroy(Store<EntityStore> store, Vector3i pos, World world) {
     var anchoredEntity = EntityUtils.getEntity(world, anchoredEntityId);
     if (anchoredEntity == null) {
       this.setAnchoredEntityId(null);
@@ -232,20 +226,18 @@ public class DisplaySlot {
       return;
     }
 
-    commandBuffer.run((store) -> {
-      var displayedItem = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
-      if (displayedItem != null) {
-        displayedItem.dropItem(store);
-      }
+    var displayedItem = store.getComponent(anchoredEntity, DisplayedItemComponent.getComponentType());
+    if (displayedItem != null) {
+      displayedItem.dropItem(store);
+    }
 
-      store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
-      this.setAnchoredEntityId(null);
+    store.removeEntity(anchoredEntity, RemoveReason.REMOVE);
+    this.setAnchoredEntityId(null);
 
-      if (removeItemSoundEventIndex != 0) {
-        SoundUtil.playSoundEvent3d(removeItemSoundEventIndex, SFX, (double) pos.x + (double) 0.5F,
-            (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, commandBuffer);
-      }
-    });
+    if (removeItemSoundEventIndex != 0) {
+      SoundUtil.playSoundEvent3d(removeItemSoundEventIndex, SFX, (double) pos.x + (double) 0.5F,
+          (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, store);
+    }
   }
 
   public void refresh() {

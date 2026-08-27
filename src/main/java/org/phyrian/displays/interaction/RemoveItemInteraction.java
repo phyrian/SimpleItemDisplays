@@ -29,11 +29,15 @@ public class RemoveItemInteraction extends SimpleBlockInteraction {
       @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull InteractionType type,
       @Nonnull InteractionContext context, @Nullable ItemStack itemInHand, @Nonnull Vector3i pos,
       @Nonnull CooldownHandler cooldownHandler) {
-    var indexChunk = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
-    var chunk = world.getChunk(indexChunk);
-    var blockType = world.getBlockType(pos);
+    var chunkIndex = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
+    var chunk = world.getChunk(chunkIndex);
+    if (chunk == null) {
+      context.getState().state = InteractionState.Failed;
+      return;
+    }
 
-    if (blockType == null || chunk == null) {
+    var blockType = chunk.getBlockType(pos);
+    if (blockType == null) {
       context.getState().state = InteractionState.Failed;
       return;
     }
@@ -56,7 +60,7 @@ public class RemoveItemInteraction extends SimpleBlockInteraction {
     }
 
     var ref = context.getEntity();
-    display.removeLastItem(commandBuffer, ref, pos, world);
+    commandBuffer.run(store -> display.removeLastItem(store, ref, pos, world));
   }
 
   @Override

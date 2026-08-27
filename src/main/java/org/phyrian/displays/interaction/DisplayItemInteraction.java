@@ -12,6 +12,7 @@ import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.protocol.InteractionState;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.entity.InteractionContext;
+import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHandler;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.client.SimpleBlockInteraction;
 import com.hypixel.hytale.server.core.universe.world.World;
@@ -26,14 +27,18 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
   @Override
   protected void interactWithBlock(@Nonnull World world,
       @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull InteractionType type,
-      @Nonnull InteractionContext context, @Nullable com.hypixel.hytale.server.core.inventory.ItemStack itemInHand, @Nonnull Vector3i pos,
+      @Nonnull InteractionContext context, @Nullable ItemStack itemInHand, @Nonnull Vector3i pos,
       @Nonnull CooldownHandler cooldownHandler) {
-    var indexChunk = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
-    var chunk = world.getChunk(indexChunk);
-    var blockType = world.getBlockType(pos);
-    var rotationIndex = world.getBlockRotationIndex(pos.x, pos.y, pos.z);
+    var chunkIndex = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
+    var chunk = world.getChunk(chunkIndex);
+    if (chunk == null) {
+      context.getState().state = InteractionState.Failed;
+      return;
+    }
 
-    if (blockType == null || chunk == null) {
+    var rotationIndex = chunk.getRotationIndex(pos.x, pos.y, pos.z);
+    var blockType = chunk.getBlockType(pos);
+    if (blockType == null) {
       context.getState().state = InteractionState.Failed;
       return;
     }
@@ -74,15 +79,14 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
 
     var ref = context.getEntity();
     var slot = context.getHeldItemSlot();
-    if (!display.addItem(itemContainer, slot, 1, commandBuffer, ref, pos, blockType,
-        rotationIndex)) {
-      context.getState().state = InteractionState.Failed;
-    }
+    var finalDisplay = display;
+    commandBuffer.run(store -> finalDisplay.addItem(itemContainer, slot, 1, store, ref, pos,
+        blockType, rotationIndex));
   }
 
   @Override
   protected void simulateInteractWithBlock(@Nonnull InteractionType type,
-      @Nonnull InteractionContext context, @Nullable com.hypixel.hytale.server.core.inventory.ItemStack itemInHand, @Nonnull World world,
+      @Nonnull InteractionContext context, @Nullable ItemStack itemInHand, @Nonnull World world,
       @Nonnull Vector3i targetBlock) {
     // no-op
   }

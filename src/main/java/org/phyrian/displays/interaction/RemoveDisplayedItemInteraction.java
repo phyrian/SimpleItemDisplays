@@ -31,8 +31,8 @@ public class RemoveDisplayedItemInteraction extends SimpleInstantInteraction {
     assert commandBuffer != null;
 
     var world = commandBuffer.getExternalData().getWorld();
-    var targetRef = context.getTargetEntity();
 
+    var targetRef = context.getTargetEntity();
     if (targetRef == null) {
       context.getState().state = InteractionState.Failed;
       return;
@@ -46,48 +46,41 @@ public class RemoveDisplayedItemInteraction extends SimpleInstantInteraction {
     }
 
     var pos = component.getDisplayPosition();
-    var chunk = world.getChunk(ChunkUtil.indexChunkFromBlock(pos.x, pos.z));
-    var blockType = world.getBlockType(pos);
-    var rotationIndex = world.getBlockRotationIndex(pos.x, pos.y, pos.z);
-
+    var chunkIndex = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
+    var chunk = world.getChunk(chunkIndex);
     if (chunk == null) {
       context.getState().state = InteractionState.Failed;
       return;
     }
 
+    var rotationIndex = chunk.getRotationIndex(pos.x, pos.y, pos.z);
+    var blockType = chunk.getBlockType(pos);
     var chunkRef = chunk.getBlockComponentEntity(pos.x, pos.y, pos.z);
-    var chunkStore = world.getChunkStore().getStore();
-
-    DisplayContainerBlock display;
-    if (chunkRef != null) {
-      display = chunkStore.getComponent(chunkRef, DisplayContainerBlock.getComponentType());
-    } else {
-      display = null;
-    }
 
     var ref = context.getEntity();
-    if (blockType == null || display == null || !isEntityAttached(targetRef, display)) {
-      commandBuffer.run((store) -> {
+    var chunkStore = world.getChunkStore().getStore();
+
+    commandBuffer.run(store -> {
+      var display = chunkRef == null ? null : chunkStore.getComponent(chunkRef, DisplayContainerBlock.getComponentType());
+      if (blockType == null || display == null || !isEntityAttached(targetRef, display)) {
         component.dropItem(store, ref);
         store.removeEntity(targetRef, RemoveReason.REMOVE);
         if (display != null) {
-          display.update(commandBuffer, pos, world, blockType, rotationIndex);
+          display.update(store, pos, world, blockType, rotationIndex);
         }
-      });
-      return;
-    }
-
-    var uuidComponent = commandBuffer.getComponent(targetRef, UUIDComponent.getComponentType());
-    if (uuidComponent != null) {
-      var uuid = uuidComponent.getUuid();
-      if (display.removeItem(uuid, commandBuffer, ref, pos, world)) {
         return;
       }
-    }
 
-    if (!display.removeLastItem(commandBuffer, ref, pos, world)) {
-      context.getState().state = InteractionState.Failed;
-    }
+      var uuidComponent = store.getComponent(targetRef, UUIDComponent.getComponentType());
+      if (uuidComponent != null) {
+        var uuid = uuidComponent.getUuid();
+        if (display.removeItem(uuid, store, ref, pos, world)) {
+          return;
+        }
+      }
+
+      display.removeLastItem(store, ref, pos, world);
+    });
   }
 
   private static boolean isEntityAttached(Ref<EntityStore> ref, DisplayContainerBlock display) {

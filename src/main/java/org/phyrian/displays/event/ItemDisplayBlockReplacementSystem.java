@@ -22,6 +22,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 
 import static org.phyrian.displays.SimpleItemDisplaysPlugin.LOGGER;
 
+// TODO: remove with next version
 public class ItemDisplayBlockReplacementSystem extends RefSystem<ChunkStore> {
 
   @Override
@@ -35,12 +36,12 @@ public class ItemDisplayBlockReplacementSystem extends RefSystem<ChunkStore> {
 
     var newComponentType = DisplayContainerBlock.getComponentType();
     if (chunkStore.getComponent(ref, newComponentType) != null) {
-      LOGGER.atInfo().log("Removing deprecated " + oldComponentType);
+      LOGGER.atInfo().log("Removing deprecated %s", oldComponentType);
       commandBuffer.run((store) -> store.removeComponent(ref, oldComponentType));
       return;
     }
 
-    LOGGER.atInfo().log("Replacing deprecated " + oldComponentType + " with " + newComponentType);
+    LOGGER.atInfo().log("Replacing deprecated %s with %s", oldComponentType, newComponentType);
 
     var itemFilters = createItemFilters(oldComponent);
     var newComponent = new DisplayContainerBlock(createDisplaySlots(oldComponent), itemFilters);

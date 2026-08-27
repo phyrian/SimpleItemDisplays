@@ -20,6 +20,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import static org.phyrian.displays.SimpleItemDisplaysPlugin.LOGGER;
 
+// TODO: remove with next version
 public class ItemDisplayBlockStateRemovalSystem extends RefSystem<EntityStore> {
 
   private static final Set<String> OLD_STATE_DISPLAY_BLOCKS =
@@ -46,16 +47,25 @@ public class ItemDisplayBlockStateRemovalSystem extends RefSystem<EntityStore> {
 
     var world = entityStore.getExternalData().getWorld();
     var pos = displayedItemComponent.getDisplayPosition();
+
     var chunkIndex = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
     var chunk = world.getChunk(chunkIndex);
-    var blockType = world.getBlockType(pos);
-    var rotationIndex = world.getBlockRotationIndex(pos.x, pos.y, pos.z);
-
-    if (blockType == null || !blockType.isState() || chunk == null) {
+    if (chunk == null) {
       return;
     }
 
-    var key = blockType.getDefaultStateKey();
+    var rotationIndex = chunk.getRotationIndex(pos.x, pos.y, pos.z);
+    var blockType = chunk.getBlockType(pos);
+    if (blockType == null) {
+      return;
+    }
+
+    var chunkRef = chunk.getBlockComponentEntity(pos.x, pos.y, pos.z);
+    if (chunkRef == null) {
+      return;
+    }
+
+    var key = blockType.getId();
     if (!OLD_STATE_DISPLAY_BLOCKS.contains(key)) {
       return;
     }
@@ -64,7 +74,7 @@ public class ItemDisplayBlockStateRemovalSystem extends RefSystem<EntityStore> {
       return;
     }
 
-    LOGGER.atInfo().log("Removing deprecated Full state from block " + key + " at position " + pos);
+    LOGGER.atInfo().log("Removing deprecated Full state from block %s at position %s", key, pos);
 
     BlockUtils.changeState(commandBuffer, null, pos, chunk, blockType, rotationIndex,
         BlockUtils.DEFAULT_STATE);
