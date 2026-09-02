@@ -1,7 +1,7 @@
 {
     "Group": "org.phyrian",
     "Name": "SimpleItemDisplays",
-    "Version": "0.3.0",
+    "Version": "0.4.0",
     "Description": "Adds flowerpots, item frames and other display blocks to the game for immersive decorations!",
     "Authors": [
         {
@@ -10,7 +10,7 @@
         }
     ],
     "Website": "",
-    "ServerVersion": "2026.03.26-89796e57b",
+    "ServerVersion": "^0.6.0",
     "Dependencies": {
         "Hytale:EntityModule": "*"
     },

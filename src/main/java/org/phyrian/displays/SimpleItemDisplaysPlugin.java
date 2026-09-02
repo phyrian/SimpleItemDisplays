@@ -5,7 +5,6 @@ import javax.annotation.Nonnull;
 import org.phyrian.displays.component.DisplayContainerBlock;
 import org.phyrian.displays.component.DisplayedItemComponent;
 import org.phyrian.displays.component.ItemDisplayBlock;
-import org.phyrian.displays.event.BlockReplaceEventSystem;
 import org.phyrian.displays.event.BreakBlockEventSystem;
 import org.phyrian.displays.event.ItemDisplayBlockReplacementSystem;
 import org.phyrian.displays.event.ItemDisplayBlockStateRemovalSystem;
@@ -36,7 +35,7 @@ public class SimpleItemDisplaysPlugin extends JavaPlugin {
   public SimpleItemDisplaysPlugin(@Nonnull JavaPluginInit init) {
     super(init);
     instance = this;
-    LOGGER.atInfo().log("SimpleItemDisplays v" + this.getManifest().getVersion().toString() + " loading...");
+    LOGGER.atInfo().log("Loading SimpleItemDisplays v%s...", this.getManifest().getVersion());
   }
 
   @Override
@@ -55,7 +54,6 @@ public class SimpleItemDisplaysPlugin extends JavaPlugin {
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_RemoveDisplayedItem", RemoveDisplayedItemInteraction.class, RemoveDisplayedItemInteraction.CODEC);
 
     this.getChunkStoreRegistry().registerSystem(new ItemDisplayBlockReplacementSystem());
-    this.getChunkStoreRegistry().registerSystem(new BlockReplaceEventSystem());
     this.getEntityStoreRegistry().registerSystem(new ItemDisplayBlockStateRemovalSystem());
     this.getEntityStoreRegistry().registerSystem(new BreakBlockEventSystem());
     this.getEntityStoreRegistry().registerSystem(new PlaceBlockEventSystem());

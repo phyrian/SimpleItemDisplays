@@ -57,9 +57,9 @@ public class ItemUtils {
     var holder = ItemComponent.generateItemDrop(store, itemStack, position, Rotation3f.ZERO,
         0.0F, 0.0F, 0.0F);
     if (holder != null) {
-      var itemcomponent = holder.getComponent(ItemComponent.getComponentType());
-      if (itemcomponent != null) {
-        itemcomponent.setPickupDelay(0.5F);
+      var itemComponent = holder.getComponent(ItemComponent.getComponentType());
+      if (itemComponent != null) {
+        itemComponent.setPickupDelay(0.5F);
       }
 
       store.addEntity(holder, AddReason.SPAWN);

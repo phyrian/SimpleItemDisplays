@@ -11,10 +11,10 @@ import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.codec.codecs.array.ArrayCodec;
-import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.inventory.container.ItemContainer;
@@ -53,10 +53,10 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
   }
 
   public boolean addItem(ItemContainer itemContainer, byte slot, int amount,
-      CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref, Vector3i pos,
+      Store<EntityStore> store, Ref<EntityStore> ref, Vector3i pos,
       BlockType blockType, int rotationIndex) {
     for (var displaySlot : displaySlots) {
-      if (displaySlot.addItem(itemContainer, slot, amount, commandBuffer, ref, pos, blockType,
+      if (displaySlot.addItem(itemContainer, slot, amount, store, ref, pos, blockType,
           rotationIndex)) {
         return true;
       }
@@ -64,38 +64,37 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
     return false;
   }
 
-  public boolean removeItem(UUID entityId, CommandBuffer<EntityStore> commandBuffer,
+  public boolean removeItem(UUID entityId, Store<EntityStore> store,
       Ref<EntityStore> ref, Vector3i pos, World world) {
     for (var displaySlot : displaySlots) {
       if (Objects.equals(displaySlot.getAnchoredEntityId(), entityId)
-          && displaySlot.removeItem(commandBuffer, ref, pos, world)) {
+          && displaySlot.removeItem(store, ref, pos, world)) {
         return true;
       }
     }
     return false;
   }
 
-  public boolean removeLastItem(CommandBuffer<EntityStore> commandBuffer, Ref<EntityStore> ref,
+  public void removeLastItem(Store<EntityStore> store, Ref<EntityStore> ref,
       Vector3i pos, World world) {
     for (int i = displaySlots.length - 1; i >= 0; i--) {
       var displaySlot = displaySlots[i];
-      if (displaySlot.removeItem(commandBuffer, ref, pos, world)) {
-        return true;
+      if (displaySlot.removeItem(store, ref, pos, world)) {
+        break;
       }
     }
-    return false;
   }
 
-  public void update(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, World world,
+  public void update(Store<EntityStore> store, Vector3i pos, World world,
       BlockType blockType, int rotationIndex) {
     for (var displaySlot : displaySlots) {
-      displaySlot.update(commandBuffer, pos, world, blockType, rotationIndex);
+      displaySlot.update(store, pos, world, blockType, rotationIndex);
     }
   }
 
-  public void onDestroy(CommandBuffer<EntityStore> commandBuffer, Vector3i pos, World world) {
+  public void onDestroy(Store<EntityStore> store, Vector3i pos, World world) {
     for (var displaySlot : displaySlots) {
-      displaySlot.onDestroy(commandBuffer, pos, world);
+      displaySlot.onDestroy(store, pos, world);
     }
   }
 

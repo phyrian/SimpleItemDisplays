@@ -150,12 +150,11 @@ public class DisplayUtils {
         return centerDisplayedBlock(item, rotationIndex, orientation, scale);
       }
       if (displayKind == DisplayKind.Model) {
-        LOGGER.atWarning().log("Tried applying model display for Item with missing ModelAsset: "
-            + item.getId());
+        LOGGER.atWarning().log("Tried applying model display for Item with missing ModelAsset: %s",
+            item.getId());
       }
     }
 
-    // not supported
     holder.addComponent(EntityScaleComponent.getComponentType(), new EntityScaleComponent(scale));
     if (displayKind != DisplayKind.Item) {
       if (item.hasBlockType()) {
@@ -163,8 +162,8 @@ public class DisplayUtils {
         return centerDisplayedBlock(item, rotationIndex, orientation, scale);
       }
       if (displayKind == DisplayKind.Block) {
-        LOGGER.atWarning().log("Tried applying block display for Item with missing BlockType: "
-            + item.getId());
+        LOGGER.atWarning().log("Tried applying block display for Item with missing BlockType: %s",
+            item.getId());
       }
     }
 
@@ -177,6 +176,7 @@ public class DisplayUtils {
    */
   private static DisplayTransform centerDisplayedBlock(Item item, int rotationIndex,
       DisplayOrientation orientation, float scale) {
+    // TODO: fix display positioning!
     var translation = new Vector3d();
     var rotation = new Rotation3f();
 
@@ -205,10 +205,7 @@ public class DisplayUtils {
       rotated = true;
     }
 
-    // TODO: the non-vertical orientation needs adjustments for multi-blocks
     if (orientation == DisplayOrientation.Vertical) {
-      var dz = getVerticalAlignment(hitbox.height(), scale);
-      translation.add(rotationTuple.rotatedVector(new Vector3d(0, -0.5, dz)));
       if (rotationIndex % 8 == 0) {
         if (rotated) {
           rotation.addRotationOnAxis(Axis.Z, -90);
@@ -222,7 +219,10 @@ public class DisplayUtils {
       } else {
         rotation.addRotationOnAxis(Axis.X, -90);
         rotation.addRotationOnAxis(Axis.Y, 180);
+        translation.add(rotationTuple.rotatedVector(new Vector3d(0, -0.5, -0.5)));
       }
+    } else {
+      translation.add(0, 0.5, 0);
     }
 
     LOGGER.atFine().log("""
@@ -392,12 +392,12 @@ public class DisplayUtils {
    * @return the correction vector
    */
   public static double getVerticalAlignment(double height, float scale) {
-    var cz = 0.5 - (scale * 0.25d); // scaled diff from center on Z
-    if (height > 1) {
-      var dz = (height / 2.0d) * (scale * 0.25d);
-      return -cz + dz;
-    } else {
-      return -cz;
-    }
+//    if (height > 1) {
+//      var cz = (height / 2.0d); // scaled diff from center on Z
+//      var dz = getHorizontalAlignment(height, scale);
+//      return (0.5 * height) + scaledz + 0.5 - dz;
+//    } else {
+      return height / 2.0d;
+//    }
   }
 }

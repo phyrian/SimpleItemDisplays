@@ -25,14 +25,17 @@ public class BreakBlockEventSystem extends EntityEventSystem<EntityStore, BreakB
   public void handle(int i, @Nonnull ArchetypeChunk<EntityStore> archetypeChunk,
       @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer,
       @Nonnull BreakBlockEvent event) {
-    var world = store.getExternalData().getWorld();
     var pos = event.getTargetBlock();
+    var world = store.getExternalData().getWorld();
 
-    var indexChunk = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
-    var chunk = world.getChunk(indexChunk);
-    var blockType = world.getBlockType(pos);
+    var chunkIndex = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
+    var chunk = world.getChunk(chunkIndex);
+    if (chunk == null) {
+      return;
+    }
 
-    if (blockType == null || chunk == null) {
+    var blockType = chunk.getBlockType(pos);
+    if (blockType == null) {
       return;
     }
 
@@ -44,7 +47,7 @@ public class BreakBlockEventSystem extends EntityEventSystem<EntityStore, BreakB
     var chunkStore = world.getChunkStore().getStore();
     var display = chunkStore.getComponent(chunkRef, DisplayContainerBlock.getComponentType());
     if (display != null) {
-      display.onDestroy(commandBuffer, pos, world);
+      commandBuffer.run(store1 -> display.onDestroy(store1, pos, world));
     }
   }
 

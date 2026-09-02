@@ -31,12 +31,16 @@ public class ChangeScaleInteraction extends SimpleBlockInteraction {
       @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull InteractionType type,
       @Nonnull InteractionContext context, @Nullable ItemStack itemInHand, @Nonnull Vector3i pos,
       @Nonnull CooldownHandler cooldownHandler) {
-    var indexChunk = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
-    var chunk = world.getChunk(indexChunk);
-    var blockType = world.getBlockType(pos);
-    var rotationIndex = world.getBlockRotationIndex(pos.x, pos.y, pos.z);
+    var chunkIndex = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
+    var chunk = world.getChunk(chunkIndex);
+    if (chunk == null) {
+      context.getState().state = InteractionState.Failed;
+      return;
+    }
 
-    if (blockType == null || chunk == null) {
+    var rotationIndex = chunk.getRotationIndex(pos.x, pos.y, pos.z);
+    var blockType = chunk.getBlockType(pos);
+    if (blockType == null) {
       context.getState().state = InteractionState.Failed;
       return;
     }
@@ -74,7 +78,7 @@ public class ChangeScaleInteraction extends SimpleBlockInteraction {
       displayTransform.setScale(newScale);
     }
 
-    display.update(commandBuffer, pos, world, blockType, rotationIndex);
+    commandBuffer.run(store -> display.update(store, pos, world, blockType, rotationIndex));
   }
 
   @Override
