@@ -1,3 +1,8 @@
+# 0.4.0
+Once again Update 6 has messed with the positioning of BlockEntity-s, and I couldn't yet figure out how exactly. For now, I have added an ad-hoc fix that works for blocks that have a 1x1x1 hitbox so you guys can keep playing with the mod enabled.
+
+- Updated the mod to release version 6
+
 # 0.3.1
 This is a small one, since I'm already super delayed on the compatibility update for the new release version.
 
