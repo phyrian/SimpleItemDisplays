@@ -155,7 +155,6 @@ public class DisplayUtils {
       }
     }
 
-    // not supported
     holder.addComponent(EntityScaleComponent.getComponentType(), new EntityScaleComponent(scale));
     if (displayKind != DisplayKind.Item) {
       if (item.hasBlockType()) {
@@ -207,8 +206,6 @@ public class DisplayUtils {
     }
 
     if (orientation == DisplayOrientation.Vertical) {
-      var dz = getVerticalAlignment(hitbox.height(), scale);
-      translation.add(rotationTuple.rotatedVector(new Vector3d(0, -0.5, -dz)));
       if (rotationIndex % 8 == 0) {
         if (rotated) {
           rotation.addRotationOnAxis(Axis.Z, -90);
@@ -222,6 +219,7 @@ public class DisplayUtils {
       } else {
         rotation.addRotationOnAxis(Axis.X, -90);
         rotation.addRotationOnAxis(Axis.Y, 180);
+        translation.add(rotationTuple.rotatedVector(new Vector3d(0, -0.5, -0.5)));
       }
     } else {
       translation.add(0, 0.5, 0);
