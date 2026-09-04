@@ -4,10 +4,7 @@ import javax.annotation.Nonnull;
 
 import org.phyrian.displays.component.DisplayContainerBlock;
 import org.phyrian.displays.component.DisplayedItemComponent;
-import org.phyrian.displays.component.ItemDisplayBlock;
 import org.phyrian.displays.event.BreakBlockEventSystem;
-import org.phyrian.displays.event.ItemDisplayBlockReplacementSystem;
-import org.phyrian.displays.event.ItemDisplayBlockStateRemovalSystem;
 import org.phyrian.displays.event.PlaceBlockEventSystem;
 import org.phyrian.displays.interaction.ChangeOrientationInteraction;
 import org.phyrian.displays.interaction.ChangeScaleInteraction;
@@ -44,7 +41,6 @@ public class SimpleItemDisplaysPlugin extends JavaPlugin {
     super.setup();
 
     DisplayContainerBlock.TYPE = this.getChunkStoreRegistry().registerComponent(DisplayContainerBlock.class, "SimpleItemDisplays_DisplayContainerBlock", DisplayContainerBlock.CODEC);
-    ItemDisplayBlock.TYPE = this.getChunkStoreRegistry().registerComponent(ItemDisplayBlock.class, "SimpleItemDisplays_ItemDisplayBlock", ItemDisplayBlock.CODEC);
     DisplayedItemComponent.TYPE = this.getEntityStoreRegistry().registerComponent(DisplayedItemComponent.class, "SimpleItemDisplays_DisplayedItem", DisplayedItemComponent.CODEC);
 
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_ChangeOrientation", ChangeOrientationInteraction.class, ChangeOrientationInteraction.CODEC);
@@ -53,8 +49,6 @@ public class SimpleItemDisplaysPlugin extends JavaPlugin {
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_RemoveItem", RemoveItemInteraction.class, RemoveItemInteraction.CODEC);
     this.getCodecRegistry(Interaction.CODEC).register("SimpleItemDisplays_RemoveDisplayedItem", RemoveDisplayedItemInteraction.class, RemoveDisplayedItemInteraction.CODEC);
 
-    this.getChunkStoreRegistry().registerSystem(new ItemDisplayBlockReplacementSystem());
-    this.getEntityStoreRegistry().registerSystem(new ItemDisplayBlockStateRemovalSystem());
     this.getEntityStoreRegistry().registerSystem(new BreakBlockEventSystem());
     this.getEntityStoreRegistry().registerSystem(new PlaceBlockEventSystem());
 
