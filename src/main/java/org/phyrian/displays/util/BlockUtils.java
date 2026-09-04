@@ -4,12 +4,16 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.joml.Vector3i;
+import org.phyrian.displays.component.DisplayContainerBlock;
 
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.universe.world.SoundUtil;
+import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
+import com.hypixel.hytale.server.core.universe.world.chunk.section.BlockComponentSection;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 public class BlockUtils {
@@ -74,5 +78,29 @@ public class BlockUtils {
 
     SoundUtil.playSoundEvent3d(ref, soundEventIndex, (double) pos.x + (double) 0.5F,
         (double) pos.y + (double) 0.5F, (double) pos.z + (double) 0.5F, commandBuffer);
+  }
+
+  public static DisplayContainerBlock getDisplayContainerBlock(World world, Vector3i targetBlock) {
+    var chunkStore = world.getChunkStore();
+    var chunkStoreStore = chunkStore.getStore();
+    var sectionReference = chunkStore.getChunkSectionReferenceAtBlock(targetBlock.x, targetBlock.y,
+        targetBlock.z);
+    if (sectionReference == null || !sectionReference.isValid()) {
+      return null;
+    }
+
+    var blockComponentSection = chunkStoreStore.getComponent(sectionReference,
+        BlockComponentSection.getComponentType());
+    if (blockComponentSection == null) {
+      return null;
+    }
+
+    var blockIndex = ChunkUtil.indexBlock(targetBlock.x, targetBlock.y, targetBlock.z);
+    var blockRef = blockComponentSection.getBlockReference(blockIndex);
+    if (blockRef == null) {
+      return null;
+    }
+
+    return chunkStoreStore.getComponent(blockRef, DisplayContainerBlock.getComponentType());
   }
 }
