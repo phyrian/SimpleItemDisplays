@@ -176,7 +176,6 @@ public class DisplayUtils {
    */
   private static DisplayTransform centerDisplayedBlock(Item item, int rotationIndex,
       DisplayOrientation orientation, float scale) {
-    // TODO: fix display positioning!
     var translation = new Vector3d();
     var rotation = new Rotation3f();
 
@@ -193,13 +192,13 @@ public class DisplayUtils {
         hitbox.toString());
 
     if (hitbox.width() > 1.0) {
-      var dx = getHorizontalAlignment(hitbox.width(), scale);
+      var dx = getAlignment(hitbox.width(), scale);
       translation.add(rotationTuple.rotatedVector(new Vector3d(dx, 0, 0)));
     }
 
     var rotated = false;
     if (hitbox.depth() > hitbox.width()) {
-      var dx = getHorizontalAlignment(hitbox.depth(), scale);
+      var dx = getAlignment(hitbox.depth(), scale);
       translation.add(rotationTuple.rotatedVector(new Vector3d(-dx, 0, 0)));
       rotation.addRotationOnAxis(Axis.Y, -90);
       rotated = true;
@@ -221,8 +220,13 @@ public class DisplayUtils {
         rotation.addRotationOnAxis(Axis.Y, 180);
         translation.add(rotationTuple.rotatedVector(new Vector3d(0, -0.5, -0.5)));
       }
+
+      if (hitbox.height() > 1.0) {
+        var dy = getAlignment(hitbox.height(), scale);
+        translation.add(rotationTuple.rotatedVector(new Vector3d(0, 0, dy)));
+      }
     } else {
-      translation.add(0, 0.5, 0);
+      translation.add(0, 0.5 * scale, 0);
     }
 
     LOGGER.atFine().log("""
@@ -381,23 +385,8 @@ public class DisplayUtils {
     return new DisplayTransform(translation, rotation, scale);
   }
 
-  private static double getHorizontalAlignment(double length, float scale) {
-    return (length / 2.0d) * (scale * 0.25d);
+  private static double getAlignment(double length, float scale) {
+    return (length / 2.0d) * (scale / 2.0d);
   }
 
-  /**
-   * Calculate the adjustment needed for the display entity when using vertical orientation to counter-act the center pivot rotation.
-   *
-   * @param scale of the displayed entity
-   * @return the correction vector
-   */
-  public static double getVerticalAlignment(double height, float scale) {
-//    if (height > 1) {
-//      var cz = (height / 2.0d); // scaled diff from center on Z
-//      var dz = getHorizontalAlignment(height, scale);
-//      return (0.5 * height) + scaledz + 0.5 - dz;
-//    } else {
-      return height / 2.0d;
-//    }
-  }
 }

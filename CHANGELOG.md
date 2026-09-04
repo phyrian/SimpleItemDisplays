@@ -1,3 +1,11 @@
+# 0.4.1
+A quick fix targeting the game crashing bug with the migration systems, and adjusting the scale of displayed items in flowerpots and displays.
+
+- Fixed the occasional crash that happened during chunk loading by removing the faulty migration systems.
+  > These systems were in place to migrate flowerpots from version 0.2.0 and below to the newer version, and I wanted to remove these in a future version anyway.
+- Adjusted the display scale on the flowerpots, the balcony planter and the display case blocks. This means, the flowers and other displayed items are now back to, or at least close enough to, the scale their used to be before Update 6.
+  > Unfortunately, this fix only affects newly placed **blocks**. Just removing and readding the displayed items will **not** solve it!  
+
 # 0.4.0
 Once again Update 6 has messed with the positioning of BlockEntity-s, and I couldn't yet figure out how exactly. For now, I have added an ad-hoc fix that works for blocks that have a 1x1x1 hitbox so you guys can keep playing with the mod enabled.
 

@@ -3,7 +3,7 @@ package org.phyrian.displays.event;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.phyrian.displays.component.DisplayContainerBlock;
+import org.phyrian.displays.util.BlockUtils;
 
 import com.hypixel.hytale.component.Archetype;
 import com.hypixel.hytale.component.ArchetypeChunk;
@@ -11,7 +11,6 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.EntityEventSystem;
-import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.server.core.event.events.ecs.PlaceBlockEvent;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
@@ -26,28 +25,11 @@ public class PlaceBlockEventSystem extends EntityEventSystem<EntityStore, PlaceB
       @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer,
       @Nonnull PlaceBlockEvent event) {
     var world = store.getExternalData().getWorld();
-    var pos = event.getTargetBlock();
+    var targetBlock = event.getTargetBlock();
 
-    var chunkIndex = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
-    var chunk = world.getChunk(chunkIndex);
-    if (chunk == null) {
-      return;
-    }
-
-    var blockType = chunk.getBlockType(pos);
-    if (blockType == null) {
-      return;
-    }
-
-    var chunkRef = chunk.getBlockComponentEntity(pos.x, pos.y, pos.z);
-    if (chunkRef == null) {
-      return;
-    }
-
-    var chunkStore = world.getChunkStore().getStore();
-    var display = chunkStore.getComponent(chunkRef, DisplayContainerBlock.getComponentType());
+    var display = BlockUtils.getDisplayContainerBlock(world, targetBlock);
     if (display != null) {
-      commandBuffer.run(store1 -> display.onDestroy(store1, pos, world));
+      commandBuffer.run(store1 -> display.onDestroy(store1, targetBlock, world));
     }
   }
 
