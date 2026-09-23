@@ -16,6 +16,8 @@ import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
+import com.riprod.patchly.PatchManager;
+import com.riprod.patchly.PatchlyPlugin;
 
 import lombok.Getter;
 
@@ -25,7 +27,7 @@ import lombok.Getter;
 public class SimpleItemDisplaysPlugin extends JavaPlugin {
 
   public static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-
+  private PatchManager patchManager;
   @Getter
   private static SimpleItemDisplaysPlugin instance;
 
@@ -33,12 +35,14 @@ public class SimpleItemDisplaysPlugin extends JavaPlugin {
     super(init);
     instance = this;
     LOGGER.atInfo().log("Loading SimpleItemDisplays v%s...", this.getManifest().getVersion());
+    patchManager = new PatchManager(this);
   }
 
   @Override
   protected void setup() {
     LOGGER.atInfo().log("Setting up SimpleItemDisplays...");
     super.setup();
+    patchManager.install();
 
     DisplayContainerBlock.TYPE = this.getChunkStoreRegistry().registerComponent(DisplayContainerBlock.class, "SimpleItemDisplays_DisplayContainerBlock", DisplayContainerBlock.CODEC);
     DisplayedItemComponent.TYPE = this.getEntityStoreRegistry().registerComponent(DisplayedItemComponent.class, "SimpleItemDisplays_DisplayedItem", DisplayedItemComponent.CODEC);

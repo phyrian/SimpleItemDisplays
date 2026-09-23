@@ -5,19 +5,21 @@
     "Description": "Adds flowerpots, item frames and other display blocks to the game for immersive decorations!",
     "Authors": [
         {
-            "Name": "Phyrian",
-            "Role": "Developer"
+            "Name": "Phyrian"
         }
     ],
     "Website": "",
-    "ServerVersion": "^0.6.0",
+    "ServerVersion": ">=0.6.8",
     "Dependencies": {
         "Hytale:EntityModule": "*"
     },
     "UpdateChecker": {
-        
+        "CurseForge": ""
     },
     "DisabledByDefault": false,
     "Main": "org.phyrian.displays.SimpleItemDisplaysPlugin",
-    "IncludesAssetPack": true
+    "IncludesAssetPack": true,
+    "OptionalDependencies": {
+        "Riprod:Patchly": "*"
+    }
 }

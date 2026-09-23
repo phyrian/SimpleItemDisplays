@@ -33,10 +33,16 @@ public class ItemFilter {
   private ItemFilterType type;
   private String[] values;
 
+  // This cache was the issue. If I had the time, the 'correct' fix would be to
+  // make this a type-discriminated union codec (using AbstractBuilder similarly
+  // to Interactions)
+  // That way each individual type implementation can handle it's own caching /
+  // reloading / loading logic - which would differ in this case depending on how
+  // it is saved. 
   private transient Set<String> itemIds;
 
   private ItemFilter() {
-    this(ItemFilterType.ItemId, new String[]{});
+    this(ItemFilterType.ItemId, new String[] {});
   }
 
   public ItemFilter(ItemFilterType type, String[] values) {
@@ -47,6 +53,11 @@ public class ItemFilter {
 
   public boolean matches(String itemId) {
     return itemIds != null && itemIds.contains(itemId);
+  }
+
+  public void refresh() {
+    itemIds = null;
+    processConfig();
   }
 
   protected void processConfig() {

@@ -72,7 +72,7 @@ public class DisplaySlot {
     this.displayTransform = other.displayTransform.clone();
     this.displayOrientation = other.displayOrientation;
     this.displayKind = other.displayKind;
-    this.itemFilters = copyArray(other.itemFilters);
+    this.itemFilters = other.itemFilters;
     this.addItemSoundEventId = other.addItemSoundEventId;
     this.addItemSoundEventIndex = other.addItemSoundEventIndex;
     this.removeItemSoundEventId = other.removeItemSoundEventId;
@@ -244,6 +244,11 @@ public class DisplaySlot {
     addItemSoundEventIndex = 0;
     removeItemSoundEventIndex = 0;
     interactionHitboxIndex = 0;
+    if (itemFilters != null) {
+      for (var itemFilter : itemFilters) {
+        itemFilter.refresh();
+      }
+    }
     processConfig();
   }
 
