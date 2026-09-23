@@ -65,6 +65,7 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
       display = new DisplayContainerBlock(blockTypeDisplay);
       chunkStore.addComponent(chunkRef, componentType, display);
     }
+    display.refresh();
 
     if (itemInHand == null) {
       context.getState().state = InteractionState.Failed;
@@ -93,7 +94,7 @@ public class DisplayItemInteraction extends SimpleBlockInteraction {
 
   static {
     CODEC = BuilderCodec.builder(DisplayItemInteraction.class, DisplayItemInteraction::new,
-            SimpleBlockInteraction.CODEC)
+        SimpleBlockInteraction.CODEC)
         .documentation("Adds an item to the target item display block.")
         .build();
   }

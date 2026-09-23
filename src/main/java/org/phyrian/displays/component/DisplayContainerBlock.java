@@ -15,6 +15,7 @@ import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.inventory.container.ItemContainer;
@@ -42,12 +43,11 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
   public DisplayContainerBlock(DisplaySlot[] displaySlots, ItemFilter[] itemFilters) {
     this.displaySlots = displaySlots;
     this.itemFilters = itemFilters;
-    this.processConfig();
   }
-
+  
   public DisplayContainerBlock(DisplayContainerBlock other) {
     this.displaySlots = copyArray(other.displaySlots, DisplaySlot::clone);
-    this.itemFilters = copyArray(other.itemFilters);
+    this.itemFilters = other.itemFilters;
     this.addItemSoundEventId = other.addItemSoundEventId;
     this.removeItemSoundEventId = other.removeItemSoundEventId;
   }
@@ -98,24 +98,31 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
     }
   }
 
+  public void refresh() {
+    for (var displaySlot : displaySlots) {
+      displaySlot.refresh();
+    }
+  }
+
   @Override
   public DisplayContainerBlock clone() {
     return new DisplayContainerBlock(this);
   }
 
-  protected void processConfig() {
-    for (var displaySlot : displaySlots) {
+  public static void applyDefaults(DisplayContainerBlock other) {
+    for (var displaySlot : other.getDisplaySlots()) {
       if (displaySlot.getItemFilters() == null) {
-        displaySlot.setItemFilters(itemFilters);
+        displaySlot.setItemFilters(other.itemFilters);
       }
       if (displaySlot.getAddItemSoundEventId() == null) {
-        displaySlot.setAddItemSoundEventId(addItemSoundEventId);
+        displaySlot.setAddItemSoundEventId(other.addItemSoundEventId);
       }
       if (displaySlot.getRemoveItemSoundEventId() == null) {
-        displaySlot.setRemoveItemSoundEventId(removeItemSoundEventId);
+        displaySlot.setRemoveItemSoundEventId(other.removeItemSoundEventId);
       }
       displaySlot.refresh();
     }
+    HytaleLogger.getLogger().atInfo().log("Applying defaults");
   }
 
   public static ComponentType<ChunkStore, DisplayContainerBlock> getComponentType() {
@@ -143,7 +150,7 @@ public class DisplayContainerBlock implements Component<ChunkStore> {
             (component) -> component.removeItemSoundEventId)
         .addValidatorLate(() -> SoundEvent.VALIDATOR_CACHE.getValidator().late())
         .add()
-        .afterDecode(DisplayContainerBlock::processConfig)
+        .afterDecode(DisplayContainerBlock::applyDefaults)
         .build();
   }
 
