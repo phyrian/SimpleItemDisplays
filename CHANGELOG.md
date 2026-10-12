@@ -1,3 +1,6 @@
+# 0.5.0
+Compatibility fix for Update 7
+
 # 0.4.1
 A quick fix targeting the game crashing bug with the migration systems, and adjusting the scale of displayed items in flowerpots and displays.
 
