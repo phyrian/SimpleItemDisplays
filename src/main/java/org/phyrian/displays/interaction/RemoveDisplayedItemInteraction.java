@@ -7,11 +7,11 @@ import javax.annotation.Nonnull;
 
 import org.phyrian.displays.component.DisplayContainerBlock;
 import org.phyrian.displays.component.DisplayedItemComponent;
+import org.phyrian.displays.util.ChunkBlockHelper;
 
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
-import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.protocol.InteractionState;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.entity.InteractionContext;
@@ -46,22 +46,15 @@ public class RemoveDisplayedItemInteraction extends SimpleInstantInteraction {
     }
 
     var pos = component.getDisplayPosition();
-    var chunkIndex = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
-    var chunk = world.getChunk(chunkIndex);
-    if (chunk == null) {
-      context.getState().state = InteractionState.Failed;
-      return;
-    }
+    var wrapper = ChunkBlockHelper.create(world, pos);
 
-    var rotationIndex = chunk.getRotationIndex(pos.x, pos.y, pos.z);
-    var blockType = chunk.getBlockType(pos);
-    var chunkRef = chunk.getBlockComponentEntity(pos.x, pos.y, pos.z);
+    var rotationIndex = wrapper.getRotationIndex();
+    var blockType = wrapper.getBlockType();
 
     var ref = context.getEntity();
-    var chunkStore = world.getChunkStore().getStore();
 
     commandBuffer.run(store -> {
-      var display = chunkRef == null ? null : chunkStore.getComponent(chunkRef, DisplayContainerBlock.getComponentType());
+      var display = wrapper.getBlockComponent(DisplayContainerBlock.getComponentType());
       if (blockType == null || display == null || !isEntityAttached(targetRef, display)) {
         component.dropItem(store, ref);
         store.removeEntity(targetRef, RemoveReason.REMOVE);
