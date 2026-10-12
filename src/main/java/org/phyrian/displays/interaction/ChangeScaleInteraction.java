@@ -6,11 +6,11 @@ import javax.annotation.Nullable;
 import org.joml.Vector3i;
 import org.phyrian.displays.component.DisplayContainerBlock;
 import org.phyrian.displays.config.DisplayTransform;
+import org.phyrian.displays.util.ChunkBlockHelper;
 import org.phyrian.displays.util.DisplayUtils;
 
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.CommandBuffer;
-import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.protocol.InteractionState;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.entity.InteractionContext;
@@ -31,30 +31,16 @@ public class ChangeScaleInteraction extends SimpleBlockInteraction {
       @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull InteractionType type,
       @Nonnull InteractionContext context, @Nullable ItemStack itemInHand, @Nonnull Vector3i pos,
       @Nonnull CooldownHandler cooldownHandler) {
-    var chunkIndex = ChunkUtil.indexChunkFromBlock(pos.x, pos.z);
-    var chunk = world.getChunk(chunkIndex);
-    if (chunk == null) {
-      context.getState().state = InteractionState.Failed;
-      return;
-    }
+    var helper = ChunkBlockHelper.create(world, pos);
 
-    var rotationIndex = chunk.getRotationIndex(pos.x, pos.y, pos.z);
-    var blockType = chunk.getBlockType(pos);
+    var rotationIndex = helper.getRotationIndex();
+    var blockType = helper.getBlockType();
     if (blockType == null) {
       context.getState().state = InteractionState.Failed;
       return;
     }
 
-    var chunkRef = chunk.getBlockComponentEntity(pos.x, pos.y, pos.z);
-    if (chunkRef == null) {
-      LOGGER.atWarning().log("Failed to interact with " + blockType.getId() + " at position " + pos
-          + " due to missing chunk ref.");
-      context.getState().state = InteractionState.Failed;
-      return;
-    }
-
-    var chunkStore = world.getChunkStore().getStore();
-    var display = chunkStore.getComponent(chunkRef, DisplayContainerBlock.getComponentType());
+    var display = helper.getBlockComponent(DisplayContainerBlock.getComponentType());
     if (display == null) {
       LOGGER.atWarning().log("Failed to interact with display due to missing DisplayContainerBlock"
           + " component.");
